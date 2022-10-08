@@ -1,19 +1,31 @@
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
 # from app.services.repository import Repo
-# from app.states.user import UserMain
+from app.states.user import UserMain, QuickCounter
 
-from utils import calculator
+from app.caclulator.example_datetime import get_today, get_new_year
 
 
 async def process_start_command(message: Message, state: FSMContext):
     # await repo.add_user(message.from_user.id)
     # bot = message.bot
     # bot.send_message(message.from_user.id, 'Hello!')
-    await message.answer('What do you need to count?')
+    await message.answer('Choose the date/time counter', reply_markup=inline)
     # await state.set_state(UserMain.SOME_STATE)
+
+# Quick counter / Custom counter
+
+
+async def process_quick_counter(query: CallbackQuery, state: FSMContext):
+    first_datetime = get_today()
+    second_date = get_new_year()
+    string = f'Input the START and END date/time in format `day.month.year`\n' \
+        f'For example: {first_datetime} - {second_date}'
+    await query.reply(string)
+    await query.answer('The Dash `-` must only be strictly between the dates.')
+    await state.set_state(QuickCounter.get_string)
 
 
 '''
@@ -50,4 +62,6 @@ print(calculator.calculate(user_choice, start_date, end_date))
 
 
 def register_user(dp: Dispatcher):
-    dp.register_message_handler(process_start_command, commands=['start'], state='*')
+    dp.register_message_handler(
+        process_start_command, commands=['start'], state='*')
+    dp.register_callback_query_handler(process_quick_counter, )

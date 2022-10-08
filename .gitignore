@@ -1,3 +1,12 @@
+stackoverflow.py
+others.py
+test_bot.py
+tests
+test_file.py
+
+# vscode
+.vscode
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
