@@ -210,15 +210,3 @@ def calculate(user_choice: str, start_date: datetime, end_date: datetime) -> dic
     return dict(zip(user_choice_parser, res))
 
 
-'''
-Быстрый подсчет
-считает к-во лет месяцев-недель-дней-часов-минут в зависимости от размера диапазона
-Пользователь вводит две даты через знак минус между ними, и получает быстрый результат
-Например:
-user_input = '20.05.2003 - 14.10.2018'
-start = parse('20.05.2003', dayfirst=True)
-end = parse('14.10.2018', dayfirst=True)
-print((relativedelta(end, start)))
-
-Результат должен парситься
-'''
