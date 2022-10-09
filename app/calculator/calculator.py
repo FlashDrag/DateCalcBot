@@ -9,10 +9,10 @@ from datetime import datetime
 
 def get_date_time(date_time_input: str) -> datetime:
     '''
-    Принимает либо слово `Текущее` либо дату и время в виде строки,
+    Принимает либо слово `Current` либо дату и время в виде строки,
     парсит в `datetime` тип/формат
     '''
-    if date_time_input == 'Текущее':
+    if date_time_input == 'Current':
         date_time = datetime.now()
     else:
         date_time = parse(date_time_input, dayfirst=True)
