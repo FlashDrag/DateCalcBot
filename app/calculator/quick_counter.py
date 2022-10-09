@@ -1,7 +1,9 @@
+import asyncio
+
 from dateutil.relativedelta import relativedelta
 from dateutil.parser import parse
 
-from relativedelta_parser import parse_relativedelta
+from calculator.relativedelta_parser import parse_relativedelta
 
 '''
 Быстрый подсчет
@@ -16,33 +18,38 @@ def quick_count(user_input_string: str) -> str:
     Пример строки от юзера: `20.05.2003 23:15 - 14 Jan 2018`
     Пример вывода: `Years: 14, Months: 7, Days: 24, Minutes: 45`
     '''
+    print(f'user_input_string: {user_input_string}')
     try:
         first, second = user_input_string.split('-')
     except Exception as e:
-        print('Problem with spliting the user_input_string', type(e.__name__), e)
-        return 'Wrong format, the dash `-` must only be strictly between the dates'
+
+        print(f'Problem with spliting the user_input_string!\n '
+              f'{type(e).__name__}: {e}')
+        return 'Error: Wrong format'
     else:
         try:
             start = parse(first, dayfirst=True)
         except Exception as e:
-            print('First part of the user_input_string if wrong',
-                  type(e.__name__), e)
-            return 'Wrong format of your start date/time'
+            print(f'First part of the user_input_string if wrong'
+                  f'{type(e).__name__}: {e}')
+            return 'Error: Wrong format of your start date/time'
         else:
             try:
                 end = parse(second, dayfirst=True)
             except Exception as e:
-                print('First part of the user_input_string if wrong',
-                      type(e.__name__), e)
-                return 'Wrong format of your end date/time'
+                print(f'First part of the user_input_string if wrong'
+                      f'{type(e).__name__}: {e}')
+                return 'Error: Wrong format of your end date/time'
             else:
                 try:
                     delta = relativedelta(end, start)
                 except Exception as e:
-                    print('relativedelta', type(e.__name__), e)
-                    return 'Wrong input, try again'
+                    print(f'relativedelta\n'
+                          f'{type(e).__name__}: {e}')
+                    return 'Error: Wrong input, try again'
                 else:
                     output_list = parse_relativedelta(delta)
+                    print(f'res: {output_list}')
                     return ', '.join(output_list)
 
 

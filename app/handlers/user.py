@@ -3,29 +3,44 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 # from app.services.repository import Repo
-from app.states.user import UserMain, QuickCounter
+from states.user import UserMain, QuickCounter
 
-from app.caclulator.example_datetime import get_today, get_new_year
+from keyboards.user_keyboard.inline_keyboard import choose_counter_inline_keyboard
+
+from calculator.example_datetime import show_datetime_formates
+from calculator.quick_counter import quick_count
 
 
 async def process_start_command(message: Message, state: FSMContext):
     # await repo.add_user(message.from_user.id)
     # bot = message.bot
     # bot.send_message(message.from_user.id, 'Hello!')
-    await message.answer('Choose the date/time counter', reply_markup=inline)
+    await message.answer('Choose the date/time counter', reply_markup=choose_counter_inline_keyboard())
     # await state.set_state(UserMain.SOME_STATE)
 
 # Quick counter / Custom counter
 
 
 async def process_quick_counter(query: CallbackQuery, state: FSMContext):
-    first_datetime = get_today()
-    second_date = get_new_year()
-    string = f'Input the START and END date/time in format `day.month.year`\n' \
-        f'For example: {first_datetime} - {second_date}'
-    await query.reply(string)
-    await query.answer('The Dash `-` must only be strictly between the dates.')
+    bot = query.bot
+    formates = show_datetime_formates()  # показать примеры ввода строки
+    string = f'Input the START and END date/time in format:\n<b>day.month.year hour:minute</b>\n\n' \
+        f'For example(<i>it can be combinate</i>):\n<code>{formates}</code>'
+    await bot.send_message(query.from_user.id, string)
+    await query.answer('The <b>dash</b> `-` must only be strictly <i>between</i> the dates.', show_alert=True)
+    await query.message.delete()
     await state.set_state(QuickCounter.get_string)
+
+
+async def process_input_string(message: Message, state: FSMContext):
+    result = quick_count(message.text)
+    if result.startswith('Error:'):
+        await message.reply(result)
+        await message.answer('Try again and use correct format!')
+        await state.set_state(QuickCounter.get_string)
+    else:
+        await message.reply(result)
+        await state.finish()
 
 
 '''
@@ -63,5 +78,8 @@ print(calculator.calculate(user_choice, start_date, end_date))
 
 def register_user(dp: Dispatcher):
     dp.register_message_handler(
-        process_start_command, commands=['start'], state='*')
-    dp.register_callback_query_handler(process_quick_counter, )
+        process_start_command, commands=['start'], state=None)
+    dp.register_callback_query_handler(
+        process_quick_counter, text='quick_counter')
+    dp.register_message_handler(
+        process_input_string, state=QuickCounter.get_string)
