@@ -1,11 +1,12 @@
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
+from aiogram.dispatcher.filters import Text
 
 # from app.services.repository import Repo
-from states.user import UserMain, QuickCounter
+from states.user import UserMain, QuickCounter, CustomCounter
 
-from keyboards.user_keyboard.inline_keyboard import choose_counter_inline_keyboard
+from keyboards.user_keyboard.inline_keyboard import choose_counter_inline_keyboard, choose_time_period_inline_keyboard
 
 from calculator.example_datetime import show_datetime_formates
 from calculator.quick_counter import quick_count
@@ -13,12 +14,19 @@ from calculator.quick_counter import quick_count
 
 async def process_start_command(message: Message, state: FSMContext):
     # await repo.add_user(message.from_user.id)
-    # bot = message.bot
-    # bot.send_message(message.from_user.id, 'Hello!')
     await message.answer('Choose the date/time counter', reply_markup=choose_counter_inline_keyboard())
     # await state.set_state(UserMain.SOME_STATE)
 
-# Quick counter / Custom counter
+
+async def process_cancel_command(message: Message, state: FSMContext):
+    bot = message.bot
+    await bot.delete_message(chat_id=message["chat"]['id'],
+                             message_id=message.message_id-1)
+    # await message.delete()
+    await state.reset_state(with_data=False)
+    await message.reply('<i>Canceled!</i>')
+    await message.answer('Choose the date/time counter',
+                         reply_markup=choose_counter_inline_keyboard())
 
 
 async def process_quick_counter(query: CallbackQuery, state: FSMContext):
@@ -27,7 +35,8 @@ async def process_quick_counter(query: CallbackQuery, state: FSMContext):
     string = f'Input the START and END date/time in format:\n<b>day.month.year hour:minute</b>\n\n' \
         f'For example(<i>it can be combinate</i>):\n<code>{formates}</code>'
     await bot.send_message(query.from_user.id, string)
-    await query.answer('The <b>dash</b> `-` must only be strictly <i>between</i> the dates.', show_alert=True)
+    await query.answer('The dash `-` must only be strictly between the dates.',
+                       show_alert=True)
     await query.message.delete()
     await state.set_state(QuickCounter.get_string)
 
@@ -41,6 +50,16 @@ async def process_input_string(message: Message, state: FSMContext):
     else:
         await message.reply(result)
         await state.finish()
+
+
+async def process_custom_counter(query: CallbackQuery, state: FSMContext):
+    bot = query.bot
+    await query.message.delete()
+    await bot.send_message(query.from_user.id, 'Choose what you want to count',
+                           reply_markup=choose_time_period_inline_keyboard())
+
+    await query.answer()
+    await state.set_state(CustomCounter.get_time_period)
 
 
 '''
@@ -79,7 +98,13 @@ print(calculator.calculate(user_choice, start_date, end_date))
 def register_user(dp: Dispatcher):
     dp.register_message_handler(
         process_start_command, commands=['start'], state=None)
+    dp.register_message_handler(
+        process_cancel_command, commands="cancel", state="*")
+    dp.register_message_handler(
+        process_cancel_command, Text(equals=['cancel', 'stop'], ignore_case=True), state="*")
     dp.register_callback_query_handler(
         process_quick_counter, text='quick_counter')
     dp.register_message_handler(
         process_input_string, state=QuickCounter.get_string)
+    dp.register_callback_query_handler(
+        process_custom_counter, text='custom_counter')

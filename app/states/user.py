@@ -7,3 +7,7 @@ class UserMain(StatesGroup):
 
 class QuickCounter(StatesGroup):
     get_string = State()
+
+
+class CustomCounter(StatesGroup):
+    get_time_period = State()
