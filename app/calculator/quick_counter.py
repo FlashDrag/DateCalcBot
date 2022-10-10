@@ -30,14 +30,14 @@ def quick_count(user_input_string: str) -> str:
         try:
             start = parse(first, dayfirst=True)
         except Exception as e:
-            print(f'First part of the user_input_string if wrong'
+            print(f'Error: Wrong format of the start date/time\n'
                   f'{type(e).__name__}: {e}')
             return 'Error: Wrong format of your start date/time'
         else:
             try:
                 end = parse(second, dayfirst=True)
             except Exception as e:
-                print(f'First part of the user_input_string if wrong'
+                print(f'Error: Wrong format of the end date/time\n'
                       f'{type(e).__name__}: {e}')
                 return 'Error: Wrong format of your end date/time'
             else:

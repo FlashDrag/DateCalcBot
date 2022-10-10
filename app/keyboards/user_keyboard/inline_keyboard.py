@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
-def choose_counter_inline_keyboard():
+def ikb_menu():
     markup = InlineKeyboardMarkup(row_width=1)
     quick = InlineKeyboardButton(text='Quick counter', callback_data='quick_counter')
     custom = InlineKeyboardButton(text='Custom counter', callback_data='custom_counter')
@@ -10,7 +10,7 @@ def choose_counter_inline_keyboard():
     return markup
 
 
-def choose_time_period_inline_keyboard():
+def ikb_time_period():
     markup = InlineKeyboardMarkup()
     years = InlineKeyboardButton(text='Years', callback_data='years')
     months = InlineKeyboardButton(text='Months', callback_data='months')
