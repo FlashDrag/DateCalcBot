@@ -1,12 +1,13 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
-def ikb_menu():
+def ikb_main_menu():
     markup = InlineKeyboardMarkup(row_width=1)
     quick = InlineKeyboardButton(text='Quick counter', callback_data='quick_counter')
     custom = InlineKeyboardButton(text='Custom counter', callback_data='custom_counter')
+    date_finder = InlineKeyboardButton(text='Date finder', callback_data='date_finder')
 
-    markup.add(quick, custom)
+    markup.add(quick, custom, date_finder)
     return markup
 
 

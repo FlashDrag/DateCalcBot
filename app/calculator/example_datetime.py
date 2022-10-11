@@ -21,8 +21,8 @@ b = get_new_year()
 start = parse(a)
 end = parse(b)
 
-print(a, '-', b)
-print(relativedelta(end, start))
+# print(a, '-', b)
+# print(relativedelta(end, start))
 
 
 def show_datetime_formates():
@@ -32,3 +32,7 @@ def show_datetime_formates():
         "24 June 2022 20:00 - 1.01.2022 09:45\n" \
         "24 June 2022 12:00 - 1 Jan 2023 00:00\n"
     return s
+
+
+# Получаем язык юзера, и по locale показываем пример формата ввода
+# Также этот формат ипользуем при выводе

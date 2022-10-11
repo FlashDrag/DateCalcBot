@@ -2,11 +2,12 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
 class UserMain(StatesGroup):
-    choose_counter = State()
+    counter = State()
 
 
-class QuickCounter(StatesGroup):
-    get_string = State()
+class Counter(StatesGroup):
+    start_datetime = State()
+    end_datetime = State()
 
 
 class CustomCounter(StatesGroup):

@@ -1,212 +1,150 @@
-"""Калькулятор времени"""
-# вычислять таймзону в боте и парсить с помощью pytz
 from dateutil.relativedelta import relativedelta
 from dateutil.parser import parse
 from datetime import datetime
 
-# datetime.now(tz: _TzInfo | None = ...) -> date
+
+class DT:
+    def __init__(self, user_datetime_string: str):
+        self.set_datetime(user_datetime_string)
+
+    def get_datetime(self):
+        return self.__datetime
+
+    def set_datetime(self, value):
+        dt = parse(value, dayfirst=True)  # params dayfirst or yearfirst set by Local, if the user showed his location
+        self.__datetime = dt
+
+    def __str__(self) -> str:
+        res = datetime.strftime(self.get_datetime(), '%d %b %y %H:%M')  # set output string format by Local
+        print(res)
+        return res
 
 
-def get_date_time(date_time_input: str) -> datetime:
-    '''
-    Принимает либо слово `Current` либо дату и время в виде строки,
-    парсит в `datetime` тип/формат
-    '''
-    if date_time_input == 'Current':
-        date_time = datetime.now()
-    else:
-        date_time = parse(date_time_input, dayfirst=True)
-    return date_time
+class Calc:
+    # TODO: сделать проверку по типу datetime
+    def __init__(self, start_date: datetime, end_date: datetime):
+        self.start_date = start_date
+        self.end_date = end_date
 
+        self._r_delta = self.get_r_delta()
+        self._delta = self.get_delta()
 
-def get_delta(start_date: datetime, end_date: datetime) -> tuple:
-    ''' Get the relativedelta between two dates '''
-    if start_date > end_date:
-        start_date, end_date = end_date, start_date
-    delta = end_date - start_date
-    r_delta = relativedelta(end_date, start_date)
-    return delta, r_delta
+        self._years = None
+        self._months = None
+        self._weeks = None
+        self._days = None
+        self._hours = None
+        self._minutes = None
 
+    def get_remains(self, **time_period):
+        '''Additionally subtract time_period: years, months etc.)'''
+        remains = (self.end_date - relativedelta(time_period) - self.start_date)
+        return remains
 
-def get_remains_from_year(start_date: datetime, end_date: datetime):
-    '''Получить остаток 'timedelta' после вычитания полных лет'''
-    r_delta = get_delta(start_date, end_date)[1]
-    result = (end_date - relativedelta(years=r_delta.years) - start_date)
-    return result
+    def get_r_delta(self):
+        '''relativedelta(months, days, hours, minutes, seconds, microseconds); optional - weeeks'''
+        r_delta = relativedelta(self.end_date, self.start_date)
+        return r_delta
 
+    def get_delta(self):
+        '''Total days or total seconds'''
+        delta = self.end_date - self.start_date
+        return delta
 
-def calculate(user_choice: str, start_date: datetime, end_date: datetime) -> dict:
-    '''
-    Принимает:
-    - Строку, которая обозначает комбинацию, которую нужно посчитать и вывести
-    - Начальную и конечную даты (уже спарсинные, и провалидированные) в типе `datetime`
-    Вывод:
-    - Словарь с ключами с `user_choice` и значением c переменной `res`
-    '''
-    delta, r_delta = get_delta(start_date, end_date)
-    year_remains = get_remains_from_year(start_date, end_date)
+    def parse_relativedelta(self, relativedelta) -> list:
+        '''
+        Принимает результат ф-ции relativedelta(end, start):
+        relativedelta(months=+4, days=+21, hours=+3, minutes=+34)
+        Парсит в список строк:
+        ['Months: 4', 'Days: 21', 'Hours: 3', 'Minutes: 16']
+        '''
+        attributes = ["years", "months", "days", "hours", "minutes"]
+        result = []
 
-    if 'years' == user_choice:
-        res = (r_delta.years,)
-    elif 'years-months' == user_choice:
-        res = r_delta.years, r_delta.months
-    elif 'years-months-weeks' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.weeks
-    elif 'years-months-weeks-days' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.weeks, r_delta.days % 7
-    elif 'years-months-weeks-days-hours' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.weeks, r_delta.days % 7, r_delta.hours
-    elif 'years-months-weeks-days-hours-minutes' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.weeks, r_delta.days % 7, r_delta.hours, r_delta.minutes
+        for attr in attributes:
+            num = getattr(relativedelta, attr)  # получаем число по атрибуту
+            if num:
+                result.append(f'{attr.capitalize()}: {abs(num)}')
+        return result
 
-    elif 'years-months-days' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.days
-    elif 'years-months-days-hours' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.days, r_delta.hours
-    elif 'years-months-days-hours-minutes' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.days, r_delta.hours, r_delta.minutes
+    def __str__(self) -> str:
+        '''
+        Quick_count (dateutil.relativedelta)
+        Getting the number of years-months-weeks-days-hours-minutes depending on the time interval size
+        Output example: `Years: 14, Months: 7, Days: 24, Minutes: 45`
+        '''
+        output_list = self.parse_relativedelta(self._r_delta)
+        print(f'res: {output_list}')
+        return ', '.join(output_list)
 
-    elif 'years-months-hours' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.days * 24 + r_delta.hours
-    elif 'years-months-hours-minutes' == user_choice:
-        res = r_delta.years, r_delta.months, r_delta.days * \
-            24 + r_delta.hours, r_delta.minutes
+    def years(self):
+        self._years = self._r_delta.years
+        return self._years
 
-    elif 'years-months-minutes' == user_choice:
-        res = r_delta.years, r_delta.months, \
-            (r_delta.days * 24 + r_delta.hours) * 60 + r_delta.minutes
+    def months(self):
+        if self._years is not None:
+            self._months = self._r_delta.months
+        else:
+            self._months = self._r_delta.years * 12 + self._r_delta.months
+        return self._months
 
-    elif 'years-weeks' == user_choice:
-        res = r_delta.years, year_remains.days // 7
-    elif 'years-weeks-days' == user_choice:
-        res = r_delta.years, year_remains.days // 7, year_remains.days % 7
-    elif 'years-weeks-days-hours' == user_choice:
-        res = r_delta.years, year_remains.days // 7, year_remains.days % 7, r_delta.hours
-    elif 'years-weeks-days-hours-minutes' == user_choice:
-        res = r_delta.years, year_remains.days // 7, year_remains.days % 7, r_delta.hours, r_delta.minutes
+    def weeks(self):
+        if self._months is not None:
+            # remains = self.get_remains(years=self._years, months=self._months)
+            # self._weeks = remains.days // 7
+            # or self._weeks = self._r_delta.days // 7
+            self._weeks = self._r_delta.weeks  # dateutil method
+        elif self._years is not None:
+            # remains = self.get_remains(years=self._years)
+            remains = self.get_remains(years=self._r_delta.years)
+            self._weeks = remains.days // 7
+        else:
+            self._weeks = self._delta.days // 7
+        return self._weeks
 
-    elif 'years-weeks-hours' == user_choice:
-        res = r_delta.years, year_remains.days // 7, \
-            (year_remains.days % 7 * 24) + r_delta.hours
-    elif 'years-weeeks-hours-minutes' == user_choice:
-        res = r_delta.years, year_remains.days // 7, \
-            (year_remains.days % 7 * 24) + \
-            r_delta.hours, r_delta.minutes
+    def days(self):
+        if self._weeks is not None:
+            self._days = self._r_delta.days % 7
+        elif self._months is not None:
+            self._days = self._r_delta.days
+        elif self._years is not None:
+            remains = self.get_remains(years=self._r_delta.years)
+            self._days = remains.days
+        else:
+            self._days = self._delta.days
+        return self._days
 
-    elif 'years-weeks-minutes' == user_choice:
-        res = r_delta.years, year_remains.days // 7, \
-            (year_remains.days % 7 * 1440) + \
-            (r_delta.hours * 60) + r_delta.minutes
+    def hours(self):
+        if self._days is not None:
+            self._hours = self._r_delta.hours
+        elif self._weeks is not None:
+            self._hours = self._r_delta.days % 7 * 24 + self._r_delta.hours
+        elif self._months is not None:
+            self._hours = self._r_delta.days * 24 + self._r_delta.hours
+            # TODO: Попробовать такой способ
+            # remains = self.get_remains(years=self._r_delta.years, months=self._r_delta.months)
+            # or remains = self.get_remains(years=self._years, months=self._months)
+            # self._hours = remains.total_seconds() // 3600
+        elif self._years is not None:
+            remains = self.get_remains(years=self._r_delta.years)
+            self._hours = remains.total_seconds() // 3600
+        else:
+            self._hours = self._delta.total_seconds() // 3600
+        return self._hours
 
-    elif 'years-days' == user_choice:
-        res = r_delta.years, year_remains.days
-    elif 'years-days-hours' == user_choice:
-        res = r_delta.years, year_remains.days, r_delta.hours
-    elif 'years-days-hours-minutes' == user_choice:
-        res = r_delta.years, year_remains.days, r_delta.hours, r_delta.minutes
-
-    elif 'years-days-minutes' == user_choice:
-        res = r_delta.years, year_remains.days, \
-            r_delta.hours * 60 + r_delta.minutes
-
-    elif 'years-hours' == user_choice:
-        res = r_delta.years, year_remains.days * 24
-    elif 'years-hours-minutes' == user_choice:
-        res = r_delta.years, year_remains.days * 24, r_delta.minutes
-
-    elif 'years-minutes' == user_choice:
-        res = r_delta.years, (year_remains.days * 24 * 60) + \
-            (r_delta.hours * 60) + r_delta.minutes
-
-    # months
-    elif 'months' == user_choice:
-        res = (r_delta.months + (r_delta.years * 12)),
-    elif 'months-weeks' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), r_delta.weeks
-    elif 'months-weeks-days' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), \
-            r_delta.days // 7, r_delta.days % 7
-    elif 'months-weeks-days-hours' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), \
-            r_delta.days // 7, r_delta.days % 7, r_delta.hours
-    elif 'months-weeks-days-hours-minutes' == user_choice:
-        res = r_delta.months, r_delta.days // 7, r_delta.days % 7, r_delta.hours, r_delta.minutes
-
-    elif 'months-weeks-hours' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), \
-            r_delta.weeks, r_delta.days % 7 * 24 + r_delta.hours
-    elif 'months-weeks-hours-minutes' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), r_delta.weeks, \
-            r_delta.days % 7 * 24 + r_delta.hours, r_delta.minutes
-
-    elif 'months-weeks-minutes' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), r_delta.weeks, \
-            (r_delta.days % 7 * 24 + r_delta.hours) * 60 + r_delta.minutes
-
-    elif 'months-days' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), r_delta.days
-    elif 'months-days-hours' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), \
-            r_delta.days, r_delta.hours
-    elif 'months-days-hours-minutes' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), \
-            r_delta.days, r_delta.hours, r_delta.minutes
-
-    elif 'months-days-minutes' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), \
-            r_delta.days, r_delta.hours * 60 + r_delta.minutes
-
-    elif 'months-hours' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), r_delta.days * 24
-    elif 'months-hours-minutes' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), \
-            r_delta.days * 24, r_delta.minutes
-
-    elif 'months-minutes' == user_choice:
-        res = r_delta.months + (r_delta.years * 12), \
-            r_delta.days * 24 * 60 + r_delta.minutes
-
-    # weeks
-    elif 'weeks' == user_choice:
-        res = delta.days // 7,
-    elif 'weeks-days' == user_choice:
-        res = delta.days // 7, delta.days % 7
-    elif 'weeks-days-hours' == user_choice:
-        res = delta.days // 7, delta.days % 7, r_delta.hours
-    elif 'weeks-days-hours-minutes' == user_choice:
-        res = delta.days // 7, delta.days % 7, r_delta.hours, r_delta.minutes
-
-    elif 'weeks-hours' == user_choice:
-        res = delta.days // 7, delta.days % 7 * 24 + r_delta.hours
-    elif 'weeks-hours-minutes' == user_choice:
-        res = delta.days // 7, delta.days % 7 * 24 + r_delta.hours, r_delta.minutes
-
-    elif 'weeks-minutes' == user_choice:
-        res = delta.days // 7, \
-            (delta.days % 7 * 24 + r_delta.hours) * 60 + r_delta.minutes
-
-    # days
-    elif 'days' == user_choice:
-        res = delta.days,
-    elif 'days-hours' == user_choice:
-        res = delta.days, r_delta.hours
-    elif 'days-hours-minutes' == user_choice:
-        res = delta.days, r_delta.hours, r_delta.minutes
-
-    elif 'days-minutes' == user_choice:
-        res = delta.days, r_delta.hours * 60 + r_delta.minutes
-
-    # hours
-    elif 'hours' == user_choice:
-        res = delta.days * 24,
-    elif 'hours-minutes' == user_choice:
-        res = delta.days * 24, r_delta.minutes
-
-    # minutes
-    elif 'minutes' == user_choice:
-        res = delta.days * 24 * 60,
-
-    user_choice_parser = user_choice.split('-')
-    return dict(zip(user_choice_parser, res))
-
-
+    def minutes(self):
+        if self._hours is not None:
+            self._minutes = self._r_delta.minutes
+        elif self._days is not None:
+            self._minutes = self._r_delta.hours * 60 + self._r_delta.minutes
+        elif self._weeks is not None:
+            self._minutes = (self._r_delta.days % 7 * 24 * 60) + \
+                (self._r_delta.hours * 60) + self._r_delta.minutes
+        elif self._months is not None:
+            self._minutes = (self._r_delta.days * 24 * 60) + \
+                (self._r_delta.hours * 60) + self._r_delta.minutes
+        elif self._years is not None:
+            remains = self.get_remains(years=self._r_delta.years)
+            self._minutes = remains.total_seconds() // 60
+        else:
+            self._minutes = self._delta.total_seconds() // 60
