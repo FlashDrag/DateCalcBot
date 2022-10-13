@@ -7,4 +7,4 @@ async def admin_start_process(m: Message):
 
 
 def register_admin(dp: Dispatcher):
-    dp.register_message_handler(admin_start_process, commands=['start'], is_admin=False)
+    dp.register_message_handler(admin_start_process, commands=['admin'], is_admin=True)

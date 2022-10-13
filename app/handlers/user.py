@@ -1,7 +1,7 @@
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
-from aiogram.dispatcher.filters import Text
+from aiogram.dispatcher.filters import Text, CommandStart
 from aiogram.types import ReplyKeyboardRemove
 
 
@@ -11,13 +11,14 @@ from states.user import UserMain, Counter, CustomCounter
 from keyboards.user_keyboard.inline_keyboard import ikb_main_menu, ikb_time_period
 from keyboards.user_keyboard.default_keyboard import formates_kb
 
-from calculator.example_datetime import show_datetime_formates
+from calculator.examples import show_datetime_formates
 from calculator.calculator import DT, Calc
+from calculator.examples import show_datetime_formates
 
 
 async def show_start_menu(message: Message, state: FSMContext):
     # await repo.add_user(message.from_user.id)
-    await message.answer('Choose the date/time counter', reply_markup=ikb_main_menu())
+    await message.answer('Choose the date/time counter ⤵', reply_markup=ikb_main_menu())
     await state.set_state(UserMain.counter)
 
 
@@ -28,20 +29,23 @@ async def cancel_action(message: Message, state: FSMContext):
     # await message.delete()
     await state.reset_state(with_data=False)
     await message.reply('<i>Canceled!</i>')
-    await message.answer('Choose the date/time counter', reply_markup=ikb_main_menu())
+    await message.answer('Choose the date/time counter ⤵', reply_markup=ikb_main_menu())
     await state.set_state(UserMain.counter)
 
 
 # TODO: Create module for quick_counter handlers and separate them (to leave clean main module)
 async def request_start_datetime(call: CallbackQuery, state: FSMContext):
-    bot = call.bot
-    # formates = show_datetime_formates()  # показать примеры ввода строки
     string = f'Put the START date/time in format:\n' \
         f'<code><b>DD.MM.YYYY HH:MM</b></code>'
-    await bot.send_message(call.from_user.id, string, reply_markup=formates_kb())
+    await call.message.answer(string, reply_markup=formates_kb())
     await call.answer('To show examples, text /formates')
     await call.message.delete()
     await state.set_state(Counter.start_datetime)
+
+
+async def show_examples(message: Message, state: FSMContext):
+    examples = show_datetime_formates()
+    await message.answer(examples)
 
 
 async def process_start_string(message: Message, state: FSMContext):
@@ -91,24 +95,19 @@ async def process_end_string(message: Message, state: FSMContext):
         else:
             # get quick result from Calc instance in string format with time period data
             result = str(calc)
-            await message.answer(f'<i>Between</i>\n{start} and {end}:\n{result}', reply_markup=ReplyKeyboardRemove())
+            await message.answer(f'<i>{start} - {end}</i>:\n{result}', reply_markup=ReplyKeyboardRemove())
             await state.finish()
 
 
 async def show_custom_counter_menu(call: CallbackQuery, state: FSMContext):
-    bot = call.bot
     await call.message.delete()
-    await bot.send_message(call.from_user.id, 'What you need to get',
-                           reply_markup=ikb_time_period)
-
+    await call.message.answer('What you need to get',
+                              reply_markup=ikb_time_period)
     await call.answer()
     await state.set_state(CustomCounter.get_time_period)
 
 
 '''
-# выберите что нужно посчитать (user выбирает нажатием инлайн кнопок, выбор добавляеться в список user_choice)
-user_choice = 'weeks-minutes'
-
 # От которой даты и/или времени считаем? `Текущее` или `ввдите дату и время(опционально)5-07-2021 14:00
 # Задаем в переменную либо дату и время котороую ввел юзер, либо текущее
 choice_start_date_time = 'Текущее'
@@ -140,7 +139,7 @@ print(calculator.calculate(user_choice, start_date, end_date))
 
 def register_user(dp: Dispatcher):
     dp.register_message_handler(
-        show_start_menu, commands=['start'], state=None)
+        show_start_menu, CommandStart(), state=None)
     dp.register_message_handler(
         cancel_action, commands="cancel", state="*")
     dp.register_message_handler(
@@ -149,9 +148,11 @@ def register_user(dp: Dispatcher):
     dp.register_callback_query_handler(
         request_start_datetime, text='quick_counter', state=UserMain.counter)
     dp.register_message_handler(
-        process_start_string, content_types=['text'], state=Counter.start_datetime)
+        show_examples, Text(equals=['📋 Formates', 'Formates'], ignore_case=True), state='*')
     dp.register_message_handler(
-        process_end_string, content_types=['text'], state=Counter.end_datetime)
+        process_start_string, state=Counter.start_datetime)
+    dp.register_message_handler(
+        process_end_string, state=Counter.end_datetime)
 
     dp.register_callback_query_handler(
         show_custom_counter_menu, text='custom_counter', state=UserMain.counter)
