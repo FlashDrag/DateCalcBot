@@ -24,21 +24,32 @@ class DT:
         and sets the `__datetime` attribute
         :param value: user-provided date/time string
         '''
-        dt = parse(value, dayfirst=True)  # params dayfirst or yearfirst set by Local, if the user showed his location
+        # dayfirst=True gives precedence to the DD-MM-YYYY format instead of MM-DD-YYYY
+        # in cases where the date format is ambiguous
+        dt = parse(value, dayfirst=True)
         self.__datetime = dt
 
     def __str__(self) -> str:
         '''
         Returns the string representation of the datetime object in specific format
         '''
-        res = datetime.strftime(self.get_datetime(), '%d %b %y %H:%M')  # set output string format by Local
+        res = datetime.strftime(self.get_datetime(), '%d %b %y %H:%M')  # set output string in format: DD-MM-YY H:M
         print(res)
         return res
 
 
 class Calc:
-    # TODO: сделать проверку по типу datetime
+    '''
+    Calculates the difference between two dates in different units of time and their combinations.
+    :param start_date: The start date as a datetime object
+    :param end_date: The end date as a datetime object
+    '''
     def __init__(self, start_date: datetime, end_date: datetime):
+        if not isinstance(start_date, datetime):
+            raise TypeError('start_date must be a datetime object')
+        if not isinstance(end_date, datetime):
+            raise TypeError('end_date must be a datetime object')
+
         self.start_date = start_date
         self.end_date = end_date
 
@@ -58,27 +69,36 @@ class Calc:
         return remains
 
     def get_r_delta(self):
-        '''relativedelta(months, days, hours, minutes, seconds, microseconds); optional - weeeks'''
+        '''
+        Get the relativedelta object between the end date and start date.
+        relativedelta(months, days, hours, minutes, seconds, microseconds); optional - weeeks
+        '''
         r_delta = relativedelta(self.end_date, self.start_date)
         return r_delta
 
     def get_delta(self):
-        '''Total days or total seconds'''
+        '''
+        Get the timedelta object between the end date and start date.
+        Total days or total seconds
+        '''
         delta = self.end_date - self.start_date
         return delta
 
-    def parse_relativedelta(self, relativedelta) -> list:
+    def parse_relativedelta(self, relativedelta: relativedelta) -> list:
         '''
-        Принимает результат ф-ции relativedelta(end, start):
-        relativedelta(months=+4, days=+21, hours=+3, minutes=+34)
-        Парсит в список строк:
-        ['Months: 4', 'Days: 21', 'Hours: 3', 'Minutes: 16']
+        Parse the relativedelta object and return a list of human-readable strings.
+        :param relativedelta: relativedelta(end, start) function result as a relativedelta object:
+        `relativedelta(months=+4, days=+21, hours=+3, minutes=+34)`
+        :return: List of human-readable list containing the string of all non zero values attributes:
+        `['Months: 4', 'Days: 21', 'Hours: 3', 'Minutes: 16']`
         '''
-        attributes = ["years", "months", "days", "hours", "minutes"]
+        attributes = ("years", "months", "days", "hours", "minutes")
         result = []
 
+        # get the value of the current attribute from the relativedelta object
+        # if the value non zero, it added to result list in the format: "Attribute name: value"
         for attr in attributes:
-            num = getattr(relativedelta, attr)  # получаем число по атрибуту
+            num = getattr(relativedelta, attr)
             if num:
                 result.append(f'{attr.capitalize()}: {abs(num)}')
         return result
@@ -86,8 +106,8 @@ class Calc:
     def __str__(self) -> str:
         '''
         Quick_count (dateutil.relativedelta)
-        Getting the number of years-months-weeks-days-hours-minutes depending on the time interval size
-        Output example: `Years: 14, Months: 7, Days: 24, Minutes: 45`
+        :return: string with a number of years-months-weeks-days-hours-minutes depending on the time interval size
+        `Years: 14, Months: 7, Days: 24, Minutes: 45`
         '''
         output_list = self.parse_relativedelta(self._r_delta)
         print(f'res: {output_list}')
