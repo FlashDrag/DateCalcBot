@@ -13,13 +13,17 @@ def ikb_main_menu():
 
 def ikb_time_period():
     markup = InlineKeyboardMarkup()
-    years = InlineKeyboardButton(text='Years', callback_data='years')
-    months = InlineKeyboardButton(text='Months', callback_data='months')
-    weeks = InlineKeyboardButton(text='Weeks', callback_data='weeks')
-    days = InlineKeyboardButton(text='Days', callback_data='days')
-    hours = InlineKeyboardButton(text='Hours', callback_data='hours')
-    minutes = InlineKeyboardButton(text='Minutes', callback_data='minutes')
+    years = InlineKeyboardButton(text='⚪️ Years', callback_data='years')
+    months = InlineKeyboardButton(text='⚪️ Months', callback_data='months')
+    weeks = InlineKeyboardButton(text='⚪️ Weeks', callback_data='weeks')
+    days = InlineKeyboardButton(text='⚪️ Days', callback_data='days')
+    hours = InlineKeyboardButton(text='⚪️ Hours', callback_data='hours')
+    minutes = InlineKeyboardButton(text='🔘 Minutes', callback_data='minutes')
+    all_units = InlineKeyboardButton(text='✔️ Select all', callback_data='all_units')
+    confirm = InlineKeyboardButton(text='☑️ CONFIRM', callback_data='confirm')
 
     markup.row(years, months, weeks)
     markup.row(days, hours, minutes)
+    markup.row(all_units)
+    markup.row(confirm)
     return markup

@@ -14,7 +14,7 @@ async def show_start_menu(message: Message, state: FSMContext):
     Displays the start inline menu and prompts the user to select a date/time counter
     '''
     # await repo.add_user(message.from_user.id)
-    await message.answer('Select a date/time counter ⤵', reply_markup=ikb_main_menu())
+    await message.answer('Select date/time counter ⤵', reply_markup=ikb_main_menu())
     # set state waiting for the user choise
     await state.set_state(UserMain.counter)
 
@@ -25,7 +25,7 @@ async def cancel_action(message: Message, state: FSMContext):
     '''
     await state.reset_state(with_data=False)
     await message.reply('<i>Canceled!</i>')
-    await message.answer('Select a date/time counter ⤵', reply_markup=ikb_main_menu())
+    await message.answer('Select date/time counter ⤵', reply_markup=ikb_main_menu())
     # set state waiting for the user choise
     await state.set_state(UserMain.counter)
 
