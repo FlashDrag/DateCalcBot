@@ -9,8 +9,13 @@ from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from config import load_config
 # from app.filters.role import RoleFilter, AdminFilter
 from filters.admin import AdminFilter
+
 from handlers.admin import register_admin
-from handlers.user import register_user
+from handlers.user.main import register_main
+from handlers.user.datetime_exapmles import register_datetime_examples
+from handlers.user.quick_counter import register_quick_counter
+from handlers.user.custom_counter import register_custom_counter
+
 # from app.middlewares.db import DbMiddleware
 # from app.middlewares.role import RoleMiddleware
 
@@ -33,7 +38,10 @@ def register_all_filters(dp):
 
 def register_all_handlers(dp):
     register_admin(dp)
-    register_user(dp)
+    register_main(dp)
+    register_datetime_examples(dp)
+    register_quick_counter(dp)
+    register_custom_counter(dp)
 
 
 async def main():
