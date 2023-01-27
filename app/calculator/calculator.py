@@ -4,17 +4,33 @@ from datetime import datetime
 
 
 class DT:
+    '''
+    This class is used to parse a user-provided date/time string into a datetime object.
+    Creating new instance takes user provided date/time string and
+    sets the datetime attribute by calling the set_datetime method
+    '''
     def __init__(self, user_datetime_string: str):
         self.set_datetime(user_datetime_string)
 
     def get_datetime(self):
+        '''
+        Returns a parsed datetime value as datetime object
+        '''
         return self.__datetime
 
     def set_datetime(self, value):
+        '''
+        Attempts to intelligently the user-provided date/time string into a datetime object
+        and sets the `__datetime` attribute
+        :param value: user-provided date/time string
+        '''
         dt = parse(value, dayfirst=True)  # params dayfirst or yearfirst set by Local, if the user showed his location
         self.__datetime = dt
 
     def __str__(self) -> str:
+        '''
+        Returns the string representation of the datetime object in specific format
+        '''
         res = datetime.strftime(self.get_datetime(), '%d %b %y %H:%M')  # set output string format by Local
         print(res)
         return res
