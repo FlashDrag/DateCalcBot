@@ -11,19 +11,29 @@ def ikb_main_menu():
     return markup
 
 
-def ikb_time_period():
-    markup = InlineKeyboardMarkup()
-    years = InlineKeyboardButton(text='⚪️ Years', callback_data='years')
-    months = InlineKeyboardButton(text='⚪️ Months', callback_data='months')
-    weeks = InlineKeyboardButton(text='⚪️ Weeks', callback_data='weeks')
-    days = InlineKeyboardButton(text='⚪️ Days', callback_data='days')
-    hours = InlineKeyboardButton(text='⚪️ Hours', callback_data='hours')
-    minutes = InlineKeyboardButton(text='🔘 Minutes', callback_data='minutes')
-    all_units = InlineKeyboardButton(text='✔️ Select all', callback_data='all_units')
-    confirm = InlineKeyboardButton(text='☑️ CONFIRM', callback_data='confirm')
+def ikb_time_period(selected_units=[]):
+    '''
+    Creates inline keyboard with checked/unchecked buttons that represent time_units
+    :param list: all selected time units existing in the list will be checked
+    :return: InlineKeyboardMarkup with checked/unchecked inline buttons
+    '''
+    markup = InlineKeyboardMarkup(row_width=3)
+    units = ["years", "months", "weeks", "days", "hours", "minutes"]
+    buttons = []
 
-    markup.row(years, months, weeks)
-    markup.row(days, hours, minutes)
+    checked = '🔘'
+    unchecked = '⚪️'
+
+    for unit in units:
+        text = ' ' + unit.capitalize()
+        # if time_unit in selected_units, it will be checked, otherwise - unchecked
+        title = checked + text if unit in selected_units else unchecked + text
+        buttons.append(InlineKeyboardButton(text=title, callback_data=unit))
+
+    all_units = InlineKeyboardButton(text='✔️ Select all', callback_data='all_units')
+    submit = InlineKeyboardButton(text='☑️ SUBMIT', callback_data='submit')
+
+    markup.add(*buttons)
     markup.row(all_units)
-    markup.row(confirm)
+    markup.row(submit)
     return markup
