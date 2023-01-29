@@ -11,7 +11,7 @@ from config import load_config
 from filters.admin import AdminFilter
 
 from handlers.admin import register_admin
-from handlers.user.main import register_main
+from handlers.user.main_menu import register_main
 from handlers.user.datetime_exapmles import register_datetime_examples
 from handlers.user.quick_counter import register_quick_counter
 from handlers.user.custom_counter import register_custom_counter
