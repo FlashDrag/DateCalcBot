@@ -12,3 +12,5 @@ class Counter(StatesGroup):
 
 class CustomCounter(StatesGroup):
     get_time_period = State()
+    set_start_datetime = State()
+    set_end_datetime = State()

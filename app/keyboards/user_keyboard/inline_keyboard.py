@@ -11,14 +11,14 @@ def ikb_main_menu():
     return markup
 
 
-def ikb_time_period(selected_units=[]):
+def ikb_time_period(selected_units=tuple()):
     '''
     Creates inline keyboard with checked/unchecked buttons that represent time_units
     :param list: all selected time units existing in the list will be checked
     :return: InlineKeyboardMarkup with checked/unchecked inline buttons
     '''
     markup = InlineKeyboardMarkup(row_width=3)
-    units = ["years", "months", "weeks", "days", "hours", "minutes"]
+    units = ("years", "months", "weeks", "days", "hours", "minutes")
     buttons = []
 
     checked = '🔘'
