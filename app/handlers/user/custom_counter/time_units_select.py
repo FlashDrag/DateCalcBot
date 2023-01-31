@@ -2,13 +2,15 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery
 
+from aiogram_dialog import DialogManager, StartMode
+
 from filters.user import TimeUnitsFilter
-from filters.user import AllUnitsFilter
-from filters.user import SubmitFilter
+from filters.user import SubmitAllUnitsFilter
+from filters.user import SubmitTimeUnitsFilter
 
 from states.user import UserMain, CustomCounter
 
-from keyboards.user_keyboard.inline_keyboard import ikb_time_period
+from keyboards.user_keyboard.inline_keyboard import ikb_time_units
 
 
 async def show_custom_counter_menu(call: CallbackQuery, state: FSMContext):
@@ -16,9 +18,9 @@ async def show_custom_counter_menu(call: CallbackQuery, state: FSMContext):
     Displays `time_units` selection menu and prompts the user select the `time_unit`
     '''
     await call.message.answer('Select the units of time to be calculated ⤵',
-                              reply_markup=ikb_time_period())
+                              reply_markup=ikb_time_units())
     await call.answer()
-    await state.set_state(CustomCounter.get_time_period)
+    await state.set_state(CustomCounter.get_time_units)
 
 
 async def process_time_unit_select(call: CallbackQuery, state: FSMContext):
@@ -35,11 +37,11 @@ async def process_time_unit_select(call: CallbackQuery, state: FSMContext):
             data['selected_units'].append(time_unit)
 
         # update inline keyboard with selected/deselected time_units
-        await call.message.edit_reply_markup(reply_markup=ikb_time_period(data['selected_units']))
+        await call.message.edit_reply_markup(reply_markup=ikb_time_units(data['selected_units']))
     await call.answer()
 
 
-async def process_all_units_select(call: CallbackQuery, state: FSMContext):
+async def process_all_units_select(call: CallbackQuery, state: FSMContext, dialog_manager: DialogManager):
     '''
     Handles the callback query which is `Select all` from the user selection.
     Save all selected time units to the state's storage and update inline keyboard
@@ -51,18 +53,21 @@ async def process_all_units_select(call: CallbackQuery, state: FSMContext):
         data['selected_units'] = list(all_units)
 
     # display updated inline keyboard with all selected time units
-    await call.message.edit_reply_markup(reply_markup=ikb_time_period(all_units))
+    await call.message.edit_reply_markup(reply_markup=ikb_time_units(all_units))
+
+    await dialog_manager.start(CustomCounter.set_start_date, mode=StartMode.RESET_STACK)
     await call.answer()
-    await CustomCounter.next()
 
 
-async def process_time_units_submit(call: CallbackQuery, state: FSMContext):
+async def process_time_units_submit(call: CallbackQuery, dialog_manager: DialogManager):
     '''
     Handles the callback query which is `Submit` from the user selection.
-    Submit the choice and provide the user to the calendar
+    Submit the choice and provide the user to the calendar using `aiogram_dialog`
     '''
+    state = dialog_manager.data['state']
+    await state.reset_state(with_data=False)
+    await dialog_manager.start(CustomCounter.set_start_date, mode=StartMode.RESET_STACK)
     await call.answer()
-    await CustomCounter.next()
 
 
 def register_time_units_select(dp: Dispatcher):
@@ -70,11 +75,11 @@ def register_time_units_select(dp: Dispatcher):
         show_custom_counter_menu, text='custom_counter', state=UserMain.counter
         )
     dp.register_callback_query_handler(
-        process_time_unit_select, TimeUnitsFilter(), state=CustomCounter.get_time_period
+        process_time_unit_select, TimeUnitsFilter(), state=CustomCounter.get_time_units
     )
     dp.register_callback_query_handler(
-        process_all_units_select, AllUnitsFilter(), state=CustomCounter.get_time_period
+        process_all_units_select, SubmitAllUnitsFilter(), state=CustomCounter.get_time_units
     )
     dp.register_callback_query_handler(
-        process_time_units_submit, SubmitFilter(), state=CustomCounter.get_time_period
+        process_time_units_submit, SubmitTimeUnitsFilter(), state=CustomCounter.get_time_units
     )

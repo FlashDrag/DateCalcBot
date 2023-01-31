@@ -15,7 +15,7 @@ class TimeUnitsFilter(BoundFilter):
         return False
 
 
-class AllUnitsFilter(BoundFilter):
+class SubmitAllUnitsFilter(BoundFilter):
     """
     Check callback_query updates.
     Return True if the callback_query is `all_units`
@@ -26,12 +26,37 @@ class AllUnitsFilter(BoundFilter):
         return False
 
 
-class SubmitFilter(BoundFilter):
+class SubmitTimeUnitsFilter(BoundFilter):
     """
     Check callback_query updates.
     Return True if the callback_query is `submit`
     """
     async def check(self, callback_query: CallbackQuery):
         if callback_query and callback_query.data == 'submit':
+            return True
+        return False
+
+
+class IncreaseTimeFilter(BoundFilter):
+    async def check(self, callback_query: CallbackQuery):
+        if callback_query and callback_query.data.startswith('increase_'):
+            return True
+        return False
+
+
+class DecreaseTimeFilter(BoundFilter):
+    async def check(self, callback_query: CallbackQuery):
+        if callback_query and callback_query.data.startswith('decrease_'):
+            return True
+        return False
+
+
+class SubmitTimeFilter(BoundFilter):
+    """
+    Check callback_query updates.
+    Return True if the callback_query is `submit_time`
+    """
+    async def check(self, callback_query: CallbackQuery):
+        if callback_query and callback_query.data == 'submit_time':
             return True
         return False

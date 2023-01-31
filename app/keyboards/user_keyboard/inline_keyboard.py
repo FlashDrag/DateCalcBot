@@ -11,7 +11,7 @@ def ikb_main_menu():
     return markup
 
 
-def ikb_time_period(selected_units=tuple()):
+def ikb_time_units(selected_units=tuple()):
     '''
     Creates inline keyboard with checked/unchecked buttons that represent time_units
     :param list: all selected time units existing in the list will be checked
@@ -36,4 +36,33 @@ def ikb_time_period(selected_units=tuple()):
     markup.add(*buttons)
     markup.row(all_units)
     markup.row(submit)
+    return markup
+
+
+def ikb_time_select(hour=00, minute=00):
+    markup = InlineKeyboardMarkup()
+
+    increase = '↑'
+    decrease = '↓'
+
+    time_unit_buttons = [
+        InlineKeyboardButton(text=hour, callback_data='-'),
+        InlineKeyboardButton(text=minute, callback_data='-')
+    ]
+
+    increase_buttons = (
+        InlineKeyboardButton(text=increase, callback_data='increase_hour'),
+        InlineKeyboardButton(text=increase, callback_data='increase_minute')
+    )
+    decrease_buttons = (
+        InlineKeyboardButton(text=decrease, callback_data='decrease_hour'),
+        InlineKeyboardButton(text=decrease, callback_data='decrease_minute')
+    )
+
+    markup.row(*increase_buttons)
+    markup.row(*time_unit_buttons)
+    markup.row(*decrease_buttons)
+    markup.row(InlineKeyboardButton(
+        text='Submit', callback_data='submit_time'))
+
     return markup
