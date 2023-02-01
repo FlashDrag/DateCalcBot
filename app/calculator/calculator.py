@@ -44,6 +44,9 @@ class Calc:
     :param start_date: The start date as a datetime object
     :param end_date: The end date as a datetime object
     '''
+
+    UNITS = ("years", "months", "weeks", "days", "hours", "minutes")
+
     def __init__(self, start_date: datetime, end_date: datetime):
         if not isinstance(start_date, datetime):
             raise TypeError('start_date must be a datetime object')
@@ -89,18 +92,19 @@ class Calc:
         Parse the relativedelta object and return a list of human-readable strings.
         :param relativedelta: relativedelta(end, start) function result as a relativedelta object:
         `relativedelta(months=+4, days=+21, hours=+3, minutes=+34)`
-        :return: List of human-readable list containing the string of all non zero values attributes:
+        :return: List of human-readable list containing the string of all non zero time units:
         `['Months: 4', 'Days: 21', 'Hours: 3', 'Minutes: 16']`
         '''
-        attributes = ("years", "months", "days", "hours", "minutes")
         result = []
 
-        # get the value of the current attribute from the relativedelta object
-        # if the value non zero, it added to result list in the format: "Attribute name: value"
-        for attr in attributes:
-            num = getattr(relativedelta, attr)
-            if num:
-                result.append(f'{attr.capitalize()}: {abs(num)}')
+        # get the value of the current time unit from the relativedelta object
+        # if the value non zero, it added to result list in the format: "Time Unit name: value"
+        for time_unit_name in self.UNITS:
+            if time_unit_name == 'weeks':
+                continue
+            time_unit_num = getattr(relativedelta, time_unit_name)
+            if time_unit_num:
+                result.append(f'{time_unit_name.capitalize()}: {abs(time_unit_num)}')
         return result
 
     def __str__(self) -> str:
