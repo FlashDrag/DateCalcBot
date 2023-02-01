@@ -47,10 +47,10 @@ async def process_all_units_select(call: CallbackQuery, state: FSMContext, dialo
     Save all selected time units to the state's storage and update inline keyboard
     Submit the choice and provide the user to the calendar
     '''
-    all_units = ("years", "months", "weeks", "days", "hours", "minutes")
+    all_units = ["years", "months", "weeks", "days", "hours", "minutes"]
 
     async with state.proxy() as data:
-        data['selected_units'] = list(all_units)
+        data['selected_units'] = all_units
 
     # display updated inline keyboard with all selected time units
     await call.message.edit_reply_markup(reply_markup=ikb_time_units(all_units))
@@ -65,6 +65,11 @@ async def process_time_units_submit(call: CallbackQuery, dialog_manager: DialogM
     Submit the choice and provide the user to the calendar using `aiogram_dialog`
     '''
     state = dialog_manager.data['state']
+    async with state.proxy() as data:
+        units = data.get('selected_units', [])
+    if not units:
+        await call.answer()
+        return
     await state.reset_state(with_data=False)
     await dialog_manager.start(CustomCounter.set_start_date, mode=StartMode.RESET_STACK)
     await call.answer()
