@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import datetime, date, time
 
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
@@ -11,6 +11,8 @@ from aiogram_dialog.widgets.kbd import Calendar
 from filters.user import IncreaseTimeFilter, DecreaseTimeFilter, SubmitTimeFilter
 from states.user import CustomCounter
 from keyboards.user_keyboard.inline_keyboard import ikb_time_select
+
+from calculator.calculator import Calc
 
 
 async def store_date(call: CallbackQuery, manager: DialogManager,
@@ -129,15 +131,48 @@ async def submit_start_time(call: CallbackQuery, dialog_manager: DialogManager):
     await dialog_manager.start(CustomCounter.set_end_date, mode=StartMode.RESET_STACK)
 
 
+async def calculate(state: FSMContext):
+    '''
+    Gets stored data from fsm storage.
+    If all related data is existed than passes start datetime and end datetime to Calc object.
+    Calls getdifference() method on the Calc object with the selected time units list as an argument.
+    :return: String of calculated data
+    '''
+    async with state.proxy() as data:
+        start_date = data.get('start_date', None)
+        end_date = data.get('end_date', None)
+        start_time = data.get('start_time', None)
+        end_time = data.get('end_time', None)
+        time_units = data.get('selected_units', None)
+
+    if not all([start_date, end_date, start_time, end_time, time_units]):
+        return 'Something went wrong. Try again!'
+
+    # combines the start date and time and end date and time into datetime objects
+    start_datetime = datetime.combine(start_date, start_time)
+    end_datetime = datetime.combine(end_date, end_time)
+    try:
+        calc = Calc(start_datetime, end_datetime)
+        result_string = calc.get_difference(time_units)
+    except Exception as e:
+        print(f'Calculation Error! {e}')
+        return 'Something went wrong. Try again!'
+    else:
+        return result_string
+
+
 async def submit_end_time(call: CallbackQuery, dialog_manager: DialogManager):
     '''
     Call `store_time` func that stores selected time as a `time` object to fsm storage.
+    Call 'calculate' func that calculate the difference.
+    Display result to the user
     '''
     state = dialog_manager.data['state']  # get a state from dialog_manager data object
     # call a func that stores selected time to fsm storage
     await store_time(call, state, 'end')
 
-    print(await state.get_data())
+    result_string = await calculate(state)
+    await call.message.answer(result_string)
     await state.finish()
 
 

@@ -66,6 +66,26 @@ class Calc:
         self._hours = None
         self._minutes = None
 
+    def get_difference(self, time_units: list) -> str:
+        '''
+        Sorts the selected time_units based on the position of its elements in the UNITS tuple.
+        In right order, calls class methods appropriated to existed time_units and return values of time.
+        :param time_units: user selected units of time
+        :return: String-result with time unit names and its values
+        '''
+
+        sorted_time_units = sorted(time_units, key=self.UNITS.index)
+        result_lst = []
+
+        for unit_name in sorted_time_units:
+            time_unit_num = getattr(self, unit_name)()
+            if not time_unit_num:
+                continue
+            result_lst.append(f'{unit_name.capitalize()}: {abs(time_unit_num)}')
+
+        print(f'Result: {result_lst}')
+        return ', '.join(result_lst)
+
     def get_remains(self, **time_period):
         '''Additionally subtract time_period: years, months etc.)'''
         remains = (self.end_date - relativedelta(time_period) - self.start_date)
@@ -95,7 +115,7 @@ class Calc:
         :return: List of human-readable list containing the string of all non zero time units:
         `['Months: 4', 'Days: 21', 'Hours: 3', 'Minutes: 16']`
         '''
-        result = []
+        result_list = []
 
         # get the value of the current time unit from the relativedelta object
         # if the value non zero, it added to result list in the format: "Time Unit name: value"
@@ -104,8 +124,8 @@ class Calc:
                 continue
             time_unit_num = getattr(relativedelta, time_unit_name)
             if time_unit_num:
-                result.append(f'{time_unit_name.capitalize()}: {abs(time_unit_num)}')
-        return result
+                result_list.append(f'{time_unit_name.capitalize()}: {abs(time_unit_num)}')
+        return result_list
 
     def __str__(self) -> str:
         '''
@@ -114,7 +134,7 @@ class Calc:
         `Years: 14, Months: 7, Days: 24, Minutes: 45`
         '''
         output_list = self.parse_relativedelta(self._r_delta)
-        print(f'res: {output_list}')
+        print(f'Result: {output_list}')
         return ', '.join(output_list)
 
     def years(self):
@@ -188,3 +208,4 @@ class Calc:
             self._minutes = remains.total_seconds() // 60
         else:
             self._minutes = self._delta.total_seconds() // 60
+        return self._minutes
