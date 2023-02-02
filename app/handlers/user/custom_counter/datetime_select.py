@@ -56,18 +56,17 @@ async def store_end_date(call: CallbackQuery, widget, manager: DialogManager, se
 
 
 async def increase_time(call: CallbackQuery, state: FSMContext):
+    '''
+    Increases the time by 1 hour or 5 minutes.
+    Return new keyboard with changed time value
+    '''
     time_unit = call.data
     async with state.proxy() as data:
         if time_unit.endswith('_hour'):
-            if data['hour'] == 23:
-                data['hour'] = 00
-            else:
-                data['hour'] += 1
+            # if the hour or minute is at the maximum value of 23 or 55 respectively - reset it to 0
+            data['hour'] = (data['hour'] + 1) % 24
         else:
-            if data['minute'] == 55:
-                data['minute'] = 00
-            else:
-                data['minute'] += 5
+            data['minute'] = (data['minute'] + 5) % 60
 
         hour = data['hour']
         minute = data['minute']
@@ -79,18 +78,17 @@ async def increase_time(call: CallbackQuery, state: FSMContext):
 
 
 async def decrease_time(call: CallbackQuery, state: FSMContext):
+    '''
+    Decreases the time by 1 hour or 5 minutes.
+    Return new keyboard with changed time value
+    '''
     time_unit = call.data
     async with state.proxy() as data:
+        # if the hour or minute is at the minimum value of zero, set it to 23 or 55 respectively
         if time_unit.endswith('_hour'):
-            if data['hour'] == 0:
-                data['hour'] = 23
-            else:
-                data['hour'] -= 1
+            data['hour'] = (data['hour'] - 1) % 24
         else:
-            if data['minute'] == 0:
-                data['minute'] = 55
-            else:
-                data['minute'] -= 5
+            data['minute'] = (data['minute'] - 5) % 60
 
         hour = data['hour']
         minute = data['minute']
