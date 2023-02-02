@@ -12,7 +12,7 @@ from filters.user import IncreaseTimeFilter, DecreaseTimeFilter, SubmitTimeFilte
 from states.user import CustomCounter
 from keyboards.user_keyboard.inline_keyboard import ikb_time_select
 
-from calculator.calculator import Calc
+from utils.calculator import Calc
 
 
 async def store_date(call: CallbackQuery, manager: DialogManager,

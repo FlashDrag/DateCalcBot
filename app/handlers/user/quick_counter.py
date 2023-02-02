@@ -11,7 +11,7 @@ from states.user import UserMain, Counter
 from keyboards.user_keyboard.default_keyboard import formates_kb
 from keyboards.user_keyboard.inline_keyboard import ikb_main_menu
 
-from calculator.calculator import DT, Calc
+from utils.calculator import DT, Calc
 
 
 async def request_start_datetime(call: CallbackQuery, state: FSMContext):
@@ -19,7 +19,7 @@ async def request_start_datetime(call: CallbackQuery, state: FSMContext):
     Sends a message to the user asking for the start date and time
     and provides a keyboard to show datetime examples.
     """
-    string = f'Put the START date/time in format:\n' \
+    string = f'Type the START date/time in format:\n' \
         f'<code><b>DD.MM.YYYY HH:MM</b></code>'
     await call.message.answer(string, reply_markup=formates_kb())
     await call.answer('To show examples, text /formates')
@@ -42,14 +42,14 @@ async def process_start_string(message: Message, state: FSMContext):
         # create DT instance and convert str to datetime format
         st_datetime = DT(message.text)
     except Exception as e:
-        print(f'Incorrect data format of the start date/time string\n'
+        print(f'Incorrect date format of the start date/time string\n'
               f'{type(e).__name__}: {e}')
-        await message.reply('Incorrect data format. Try again!')
+        await message.reply('Incorrect date format. Try again!')
         await state.set_state(Counter.start_datetime)
     else:
         async with state.proxy() as dt:
             dt['st_datetime'] = st_datetime  # save DT instance to storage
-        string = f'Put the END date/time in format:\n' \
+        string = f'Type the END date/time in format:\n' \
             f'<code><b>DD.MM.YYYY HH:MM</b></code>'
         # provides a keyboard to show datetime examples
         await message.answer(string, reply_markup=formates_kb())
@@ -76,9 +76,9 @@ async def process_end_string(message: Message, state: FSMContext):
         # create DT instance and convert str to datetime format
         end_datetime = DT(message.text)
     except Exception as e:
-        print(f'Incorrect data format of the end date/time string!\n'
+        print(f'Incorrect date format of the end date/time string!\n'
               f'{type(e).__name__}: {e}')
-        await message.reply('Incorrect data format. Try again!')
+        await message.reply('Incorrect date format. Try again!')
         await state.set_state(Counter.end_datetime)
     else:
         async with state.proxy() as dt:
