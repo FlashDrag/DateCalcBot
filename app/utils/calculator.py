@@ -53,8 +53,7 @@ class Calc:
         if not isinstance(end_date, datetime):
             raise TypeError('end_date must be a datetime object')
 
-        self.start_date = start_date
-        self.end_date = end_date
+        self.start_date, self.end_date = min(start_date, end_date), max(start_date, end_date)
 
         self._r_delta = self.get_r_delta()
         self._delta = self.get_delta()
@@ -81,10 +80,12 @@ class Calc:
             time_unit_num = getattr(self, unit_name)()
             if not time_unit_num:
                 continue
-            result_lst.append(f'{unit_name.capitalize()}: {abs(time_unit_num)}')
+            result_lst.append(f'{unit_name.capitalize()}: {time_unit_num}')
 
-        print(f'Result: {result_lst}')
-        return ', '.join(result_lst)
+        start_datetime_str = datetime.strftime(self.start_date, '%d %b %y %H:%M')
+        end_datetime_str = datetime.strftime(self.end_date, '%d %b %y %H:%M')
+        result_str = f'{start_datetime_str} - {end_datetime_str}\n <b>{", ".join(result_lst)}</b>'
+        return result_str
 
     def get_remains(self, **time_period):
         '''Additionally subtract time_period: years, months etc.)'''
@@ -124,7 +125,7 @@ class Calc:
                 continue
             time_unit_num = getattr(relativedelta, time_unit_name)
             if time_unit_num:
-                result_list.append(f'{time_unit_name.capitalize()}: {abs(time_unit_num)}')
+                result_list.append(f'{time_unit_name.capitalize()}: {time_unit_num}')
         return result_list
 
     def __str__(self) -> str:

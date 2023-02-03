@@ -28,7 +28,7 @@ async def store_date(call: CallbackQuery, manager: DialogManager,
         data['minute'] = 00
 
     await call.message.edit_text(f'Selected {date_mark} date')
-    await call.message.answer(selected_date)
+    await call.message.answer(date.strftime(selected_date, "%d-%m-%Y"))
     await call.message.answer('Select time', reply_markup=ikb_time_select())
 
     # Close calendar widget and exit from dialog
@@ -112,7 +112,7 @@ async def store_time(call: CallbackQuery, state: FSMContext, time_mark: str):
     # remove time selection inline keyboard
     await call.message.delete_reply_markup()
     await call.message.edit_text(f'Selected {time_mark} time')
-    await call.message.answer(selected_time)
+    await call.message.answer(time.strftime(selected_time, "%H:%M"))
     await call.answer()
 
 
