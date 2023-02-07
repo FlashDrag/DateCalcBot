@@ -4,9 +4,7 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery
 
-from aiogram_dialog import Dialog, Window, DialogManager, StartMode
-from aiogram_dialog.widgets.text import Const
-from aiogram_dialog.widgets.kbd import Calendar
+from utils.calendar import InlineCalendar, calendar_callback
 
 from filters.user import IncreaseTimeFilter, DecreaseTimeFilter, SubmitTimeFilter
 from states.user import CustomCounter
@@ -14,13 +12,14 @@ from keyboards.user_keyboard.inline_keyboard import ikb_time_select
 
 from utils.calculator import Calc
 
+# TODO Refactor Time selection similar to calendar
 
-async def store_date(call: CallbackQuery, manager: DialogManager,
+
+async def store_date(call: CallbackQuery,
                      state: FSMContext, selected_date: date, date_mark: str):
     '''
     Store start/end date to fsm storage appropriate to date_mark.
     Display time selection keyboard.
-    Close aiogram_dialog.
     '''
     async with state.proxy() as data:
         data[date_mark + '_date'] = selected_date
@@ -30,29 +29,29 @@ async def store_date(call: CallbackQuery, manager: DialogManager,
     await call.message.edit_text(f'Selected {date_mark} date')
     await call.message.answer(date.strftime(selected_date, "%d-%m-%Y"))
     await call.message.answer('Select time', reply_markup=ikb_time_select())
-
-    # Close calendar widget and exit from dialog
-    await manager.done()
+    await call.answer()
 
 
-async def store_start_date(call: CallbackQuery, widget, manager: DialogManager, selected_date: date):
+async def store_start_date(call: CallbackQuery, state: FSMContext, callback_data: dict):
     '''
     Call store_date func that stores the start date to fsm storage
     '''
-    date_mark = 'start'
-    state = manager.data['state']
-    await store_date(call=call, manager=manager, state=state, selected_date=selected_date, date_mark=date_mark)
-    await state.set_state(CustomCounter.set_start_time)
+    selected, date = await InlineCalendar().process_selection(call, callback_data)
+    if selected:
+        date_mark = 'start'
+        await store_date(call=call, state=state, selected_date=date, date_mark=date_mark)
+        await state.set_state(CustomCounter.set_start_time)
 
 
-async def store_end_date(call: CallbackQuery, widget, manager: DialogManager, selected_date: date):
+async def store_end_date(call: CallbackQuery, state: FSMContext, callback_data: dict):
     '''
     Call store_date func that stores the end date to fsm storage
     '''
-    date_mark = 'end'
-    state = manager.data['state']
-    await store_date(call=call, manager=manager, state=state, selected_date=selected_date, date_mark=date_mark)
-    await state.set_state(CustomCounter.set_end_time)
+    selected, date = await InlineCalendar().process_selection(call, callback_data)
+    if selected:
+        date_mark = 'end'
+        await store_date(call=call, state=state, selected_date=date, date_mark=date_mark)
+        await state.set_state(CustomCounter.set_end_time)
 
 
 async def increase_time(call: CallbackQuery, state: FSMContext):
@@ -113,20 +112,19 @@ async def store_time(call: CallbackQuery, state: FSMContext, time_mark: str):
     await call.message.delete_reply_markup()
     await call.message.edit_text(f'Selected {time_mark} time')
     await call.message.answer(time.strftime(selected_time, "%H:%M"))
-    await call.answer()
 
 
-async def submit_start_time(call: CallbackQuery, dialog_manager: DialogManager):
+async def submit_start_time(call: CallbackQuery, state: FSMContext):
     '''
     Call `store_time` func that stores selected time as a `time` object to fsm storage.
-    Start aiogram_dialog with Calendar widget.
+    Provide the user to calendar and prompt select end date.
     '''
-    state = dialog_manager.data['state']  # get a state from dialog_manager data object
     # call a func that stores selected time to fsm storage
     await store_time(call, state, 'start')
 
-    # back to dialog, display calendar
-    await dialog_manager.start(CustomCounter.set_end_date, mode=StartMode.RESET_STACK)
+    await call.message.answer('Select end date', reply_markup=await InlineCalendar().start_calendar())
+    await state.set_state(CustomCounter.set_end_date)
+    await call.answer()
 
 
 async def calculate(state: FSMContext):
@@ -159,37 +157,26 @@ async def calculate(state: FSMContext):
         return result_string
 
 
-async def submit_end_time(call: CallbackQuery, dialog_manager: DialogManager):
+async def submit_end_time(call: CallbackQuery, state: FSMContext):
     '''
     Call `store_time` func that stores selected time as a `time` object to fsm storage.
     Call 'calculate' func that calculate the difference.
     Display result to the user
     '''
-    state = dialog_manager.data['state']  # get a state from dialog_manager data object
     # call a func that stores selected time to fsm storage
     await store_time(call, state, 'end')
 
     result_string = await calculate(state)
     await call.message.answer(result_string)
+    await call.answer()
     await state.finish()
 
 
-"""DIALOG"""
-date_select_dialog = Dialog(
-    Window(
-        Const('Select start date'),
-        Calendar(id='calendar', on_click=store_start_date),
-        state=CustomCounter.set_start_date
-    ),
-    Window(
-        Const('Select end date'),
-        Calendar(id='calendar', on_click=store_end_date),
-        state=CustomCounter.set_end_date
-    )
-)
-
-
 def register_time_select(dp: Dispatcher):
+    dp.register_callback_query_handler(
+        store_start_date, calendar_callback.filter(),
+        state=CustomCounter.set_start_date
+    )
     dp.register_callback_query_handler(
         increase_time, IncreaseTimeFilter(),
         state=[CustomCounter.set_start_time, CustomCounter.set_end_time]
@@ -200,6 +187,10 @@ def register_time_select(dp: Dispatcher):
     )
     dp.register_callback_query_handler(
         submit_start_time, SubmitTimeFilter(), state=CustomCounter.set_start_time
+    )
+    dp.register_callback_query_handler(
+        store_end_date, calendar_callback.filter(),
+        state=CustomCounter.set_end_date
     )
     dp.register_callback_query_handler(
         submit_end_time, SubmitTimeFilter(), state=CustomCounter.set_end_time

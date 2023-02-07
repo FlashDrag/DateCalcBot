@@ -1,2 +1,16 @@
 TODO: Вывод даты при добавлении и вычитании определенного к-ва годов месяцев и т.д
 
+
+Неккоректный результат:
+
+Selected start date
+2023-02-16
+Selected start time
+00:00
+Selected end date
+2023-02-08
+Selected end time
+00:00
+Weeks 1, Days: 6
+Expected: Weeks 1, Days: 1
+

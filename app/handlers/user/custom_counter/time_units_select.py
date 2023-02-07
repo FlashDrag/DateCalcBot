@@ -2,14 +2,13 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery
 
-from aiogram_dialog import DialogManager, StartMode
-
 from filters.user import TimeUnitsFilter
 from filters.user import SubmitAllUnitsFilter
 from filters.user import SubmitTimeUnitsFilter
 
 from states.user import UserMain, CustomCounter
 
+from utils.calendar import InlineCalendar
 from keyboards.user_keyboard.inline_keyboard import ikb_time_units
 
 
@@ -41,7 +40,7 @@ async def process_time_unit_select(call: CallbackQuery, state: FSMContext):
     await call.answer()
 
 
-async def process_all_units_select(call: CallbackQuery, state: FSMContext, dialog_manager: DialogManager):
+async def process_all_units_select(call: CallbackQuery, state: FSMContext):
     '''
     Handles the callback query which is `Select all` from the user selection.
     Save all selected time units to the state's storage and update inline keyboard
@@ -54,31 +53,32 @@ async def process_all_units_select(call: CallbackQuery, state: FSMContext, dialo
 
     # display updated inline keyboard with all selected time units
     await call.message.edit_reply_markup(reply_markup=ikb_time_units(all_units))
-
-    await dialog_manager.start(CustomCounter.set_start_date, mode=StartMode.RESET_STACK)
+    await call.message.answer('Select start date',
+                              reply_markup=await InlineCalendar().start_calendar())
+    await state.set_state(CustomCounter.set_start_date)
     await call.answer()
 
 
-async def process_time_units_submit(call: CallbackQuery, dialog_manager: DialogManager):
+async def process_time_units_submit(call: CallbackQuery, state: FSMContext):
     '''
     Handles the callback query which is `Submit` from the user selection.
-    Submit the choice and provide the user to the calendar using `aiogram_dialog`
+    Submit the choice and provide the user to the calendar
     '''
-    state = dialog_manager.data['state']
     async with state.proxy() as data:
         units = data.get('selected_units', [])
     if not units:
         await call.answer()
         return
-    await state.reset_state(with_data=False)
-    await dialog_manager.start(CustomCounter.set_start_date, mode=StartMode.RESET_STACK)
+    await call.message.answer('Select start date',
+                              reply_markup=await InlineCalendar().start_calendar())
+    await state.set_state(CustomCounter.set_start_date)
     await call.answer()
 
 
 def register_time_units_select(dp: Dispatcher):
     dp.register_callback_query_handler(
         show_custom_counter_menu, text='custom_counter', state=UserMain.counter
-        )
+    )
     dp.register_callback_query_handler(
         process_time_unit_select, TimeUnitsFilter(), state=CustomCounter.get_time_units
     )

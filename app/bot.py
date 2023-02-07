@@ -6,8 +6,6 @@ from aiogram.types import ParseMode
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
-from aiogram_dialog import DialogRegistry
-
 from config import load_config
 # from app.filters.role import RoleFilter, AdminFilter
 from filters.admin import AdminFilter
@@ -19,7 +17,6 @@ from handlers.user.quick_counter import register_quick_counter
 from handlers.user.custom_counter.time_units_select import register_time_units_select
 from handlers.user.custom_counter.datetime_select import register_time_select
 
-from handlers.user.custom_counter.datetime_select import date_select_dialog
 
 # from app.middlewares.db import DbMiddleware
 # from app.middlewares.role import RoleMiddleware
@@ -50,10 +47,6 @@ def register_all_handlers(dp):
     register_time_select(dp)
 
 
-def register_dialogs(registry):
-    registry.register(date_select_dialog)
-
-
 async def main():
     logging.basicConfig(
         level=logging.INFO,
@@ -76,7 +69,6 @@ async def main():
 
     bot = Bot(token=config.tg_bot.token, parse_mode=ParseMode.HTML)
     dp = Dispatcher(bot, storage=storage)
-    registry = DialogRegistry(dp)
 
     # dp.middleware.setup(DbMiddleware(pool))
     # dp.middleware.setup(RoleMiddleware(config.tg_bot.admin_id))
@@ -90,8 +82,6 @@ async def main():
     register_all_middlewares(dp)
     register_all_filters(dp)
     register_all_handlers(dp)
-
-    register_dialogs(registry)
 
     # start
     try:
