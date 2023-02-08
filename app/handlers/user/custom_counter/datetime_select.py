@@ -1,3 +1,5 @@
+import logging
+
 from datetime import datetime, date, time
 
 from aiogram import Dispatcher
@@ -13,6 +15,8 @@ from keyboards.user_keyboard.inline_keyboard import ikb_time_select
 from utils.calculator import Calc
 
 # TODO Refactor Time selection similar to calendar
+
+logger = logging.getLogger(__name__)
 
 
 async def store_date(call: CallbackQuery,
@@ -151,7 +155,7 @@ async def calculate(state: FSMContext):
         calc = Calc(start_datetime, end_datetime)
         result_string = calc.get_difference(time_units)
     except Exception as e:
-        print(f'Calculation Error! {e}')
+        logger.error(f'Calculation Error! {e}')
         return 'Something went wrong. Try again!'
     else:
         return result_string
@@ -170,6 +174,8 @@ async def submit_end_time(call: CallbackQuery, state: FSMContext):
     await call.message.answer(result_string)
     await call.answer()
     await state.finish()
+
+    logger.info(f'\nUser: {call.from_user.full_name}, id: {call.from_user.id}\n{result_string}')
 
 
 def register_time_select(dp: Dispatcher):

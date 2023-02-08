@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
@@ -12,6 +14,8 @@ from keyboards.user_keyboard.default_keyboard import formates_kb
 from keyboards.user_keyboard.inline_keyboard import ikb_main_menu
 
 from utils.calculator import DT, Calc
+
+logger = logging.getLogger(__name__)
 
 
 async def request_start_datetime(call: CallbackQuery, state: FSMContext):
@@ -42,8 +46,8 @@ async def process_start_string(message: Message, state: FSMContext):
         # create DT instance and convert str to datetime format
         st_datetime = DT(message.text)
     except Exception as e:
-        print(f'Incorrect date format of the start date/time string\n'
-              f'{type(e).__name__}: {e}')
+        logger.error(f'Incorrect date format of the start date/time string\n'
+                     f'{type(e).__name__}: {e}')
         await message.reply('Incorrect date format. Try again!')
         await state.set_state(Counter.start_datetime)
     else:
@@ -76,8 +80,8 @@ async def process_end_string(message: Message, state: FSMContext):
         # create DT instance and convert str to datetime format
         end_datetime = DT(message.text)
     except Exception as e:
-        print(f'Incorrect date format of the end date/time string!\n'
-              f'{type(e).__name__}: {e}')
+        logger.error(f'Incorrect date format of the end date/time string!\n'
+                     f'{type(e).__name__}: {e}')
         await message.reply('Incorrect date format. Try again!')
         await state.set_state(Counter.end_datetime)
     else:
@@ -94,15 +98,18 @@ async def process_end_string(message: Message, state: FSMContext):
             calc = Calc(dt['st_datetime'].get_datetime(),
                         dt['end_datetime'].get_datetime())
         except Exception as e:
-            print(
+            logger.error(
                 f'Error of creating `Calc` instance!\n {type(e).__name__}: {e}')
             await message.answer('Something Went Wrong, Please Try Again', reply_markup=ikb_main_menu())
             await state.finish()
         else:
             # get quick result from Calc instance in string format with time period data
             result = str(calc)
-            await message.answer(f'<i>{start} - {end}</i>:\n{result}', reply_markup=ReplyKeyboardRemove())
+            res_str = f'<i>{start} - {end}</i>:\n{result}'
+            await message.answer(res_str, reply_markup=ReplyKeyboardRemove())
             await state.finish()
+
+            logger.info(f'\nUser: {message.from_user.full_name}, id: {message.from_user.id}\n{res_str}')
 
 
 def register_quick_counter(dp: Dispatcher):
