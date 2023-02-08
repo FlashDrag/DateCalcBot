@@ -69,6 +69,7 @@ async def main():
 
     bot = Bot(token=config.tg_bot.token, parse_mode=ParseMode.HTML)
     dp = Dispatcher(bot, storage=storage)
+    await dp.skip_updates()
 
     # dp.middleware.setup(DbMiddleware(pool))
     # dp.middleware.setup(RoleMiddleware(config.tg_bot.admin_id))
