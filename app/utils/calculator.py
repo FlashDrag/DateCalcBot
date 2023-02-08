@@ -88,8 +88,13 @@ class Calc:
         return result_str
 
     def get_remains(self, **time_period):
-        '''Additionally subtract time_period: years, months etc.)'''
-        remains = (self.end_date - relativedelta(time_period) - self.start_date)
+        '''
+        Gets remains from additionally substracting relativedelta(years=12) of the start and end date
+        from difference between the end and start dates.
+        :param: time units num, moustly relativedelta units between start and end date (years, months etc.)
+        :return: relativedelta remains which can be received as days or total_seconds
+        '''
+        remains = (self.end_date - relativedelta(**time_period) - self.start_date)
         return remains
 
     def get_r_delta(self):
@@ -156,7 +161,6 @@ class Calc:
             # or self._weeks = self._r_delta.days // 7
             self._weeks = self._r_delta.weeks  # dateutil method
         elif self._years is not None:
-            # remains = self.get_remains(years=self._years)
             remains = self.get_remains(years=self._r_delta.years)
             self._weeks = remains.days // 7
         else:
