@@ -6,7 +6,7 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery
 
-from utils.calendar import InlineCalendar, calendar_callback
+from keyboards.user_keyboard.ikb_calendar import CalendarIkb, calendar_callback
 
 from filters.user import IncreaseTimeFilter, DecreaseTimeFilter, SubmitTimeFilter
 from states.user import CustomCounter
@@ -40,7 +40,7 @@ async def store_start_date(call: CallbackQuery, state: FSMContext, callback_data
     '''
     Call store_date func that stores the start date to fsm storage
     '''
-    selected, date = await InlineCalendar().process_selection(call, callback_data)
+    selected, date = await CalendarIkb().process_selection(call, callback_data)
     if selected:
         date_mark = 'start'
         await store_date(call=call, state=state, selected_date=date, date_mark=date_mark)
@@ -51,7 +51,7 @@ async def store_end_date(call: CallbackQuery, state: FSMContext, callback_data: 
     '''
     Call store_date func that stores the end date to fsm storage
     '''
-    selected, date = await InlineCalendar().process_selection(call, callback_data)
+    selected, date = await CalendarIkb().process_selection(call, callback_data)
     if selected:
         date_mark = 'end'
         await store_date(call=call, state=state, selected_date=date, date_mark=date_mark)
@@ -126,7 +126,7 @@ async def submit_start_time(call: CallbackQuery, state: FSMContext):
     # call a func that stores selected time to fsm storage
     await store_time(call, state, 'start')
 
-    await call.message.answer('Select end date', reply_markup=await InlineCalendar().start_calendar())
+    await call.message.answer('Select end date', reply_markup=await CalendarIkb().display_calendar_ikb())
     await state.set_state(CustomCounter.set_end_date)
     await call.answer()
 
