@@ -4,10 +4,11 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 def formates_kb():
     markup = ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     request_location = False  # user.location is exist  # True/False from DB
-    current_time = KeyboardButton(text='🕓 Current time', request_location=request_location)
+    # TODO location
+    # current_time = KeyboardButton(text='🕓 Current time', request_location=request_location)
     formates = KeyboardButton(text='📋 Formates')
 
-    markup.add(current_time, formates)
+    markup.add(formates)
     return markup
 
 
