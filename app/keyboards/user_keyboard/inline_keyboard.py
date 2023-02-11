@@ -5,9 +5,10 @@ def ikb_main_menu():
     markup = InlineKeyboardMarkup(row_width=1)
     quick = InlineKeyboardButton(text='📆 Quick counter', callback_data='quick_counter')
     custom = InlineKeyboardButton(text='⚙️ Custom counter', callback_data='custom_counter')
-    date_finder = InlineKeyboardButton(text='🔎 Date finder', callback_data='date_finder')
+    # TODO date finder
+    # date_finder = InlineKeyboardButton(text='🔎 Date finder', callback_data='date_finder')
 
-    markup.add(quick, custom, date_finder)
+    markup.add(quick, custom)
     return markup
 
 
@@ -36,33 +37,4 @@ def ikb_time_units(selected_units=tuple()):
     markup.add(*buttons)
     markup.row(all_units)
     markup.row(submit)
-    return markup
-
-
-def ikb_time_select(hour=00, minute=00):
-    markup = InlineKeyboardMarkup()
-
-    increase = '↑'
-    decrease = '↓'
-
-    time_unit_buttons = [
-        InlineKeyboardButton(text=hour, callback_data='-'),
-        InlineKeyboardButton(text=minute, callback_data='-')
-    ]
-
-    increase_buttons = (
-        InlineKeyboardButton(text=increase, callback_data='increase_hour'),
-        InlineKeyboardButton(text=increase, callback_data='increase_minute')
-    )
-    decrease_buttons = (
-        InlineKeyboardButton(text=decrease, callback_data='decrease_hour'),
-        InlineKeyboardButton(text=decrease, callback_data='decrease_minute')
-    )
-
-    markup.row(*increase_buttons)
-    markup.row(*time_unit_buttons)
-    markup.row(*decrease_buttons)
-    markup.row(InlineKeyboardButton(
-        text='Submit', callback_data='submit_time'))
-
     return markup
