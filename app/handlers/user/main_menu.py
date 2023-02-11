@@ -20,17 +20,28 @@ async def show_start_menu(message: Message, state: FSMContext):
     await state.set_state(UserMain.counter)
 
 
+async def show_info(message: Message, state: FSMContext):
+    await state.reset_state()
+    await message.answer(f'Welcome to DateTime Caclucator!\n'
+                         'The Bot can calculate the difference between two dates '
+                         'in different units of time and their combinations.\n'
+                         '<b>Enter /start to display the menu!</b>')
+
+
 async def cancel_action(message: Message, state: FSMContext):
     '''
     Resets state and displays the start inline menu
     '''
-    await state.reset_state(with_data=False)
+    await state.reset_state()
     await message.reply('<i>Canceled!</i>')
+    await message.answer('<b>Enter /start to display the menu!</b>')
 
 
 def register_main(dp: Dispatcher):
     dp.register_message_handler(
         show_start_menu, CommandStart(), state=None)
+    dp.register_message_handler(
+        show_info, commands="info", state="*")
     dp.register_message_handler(
         cancel_action, commands="cancel", state="*")
     dp.register_message_handler(
