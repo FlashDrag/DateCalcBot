@@ -16,13 +16,13 @@ noXplode's 'SimpleCalendar' and 'DialogCalendar' were merged in single `InlineCa
 '''
 
 
-class InlineCalendar:
+class CalendarIkb:
     months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     ignore_callback = calendar_callback.new(
         "IGNORE", 0, 0, 0)  # for buttons with no answer
 
-    async def start_calendar(
+    async def display_calendar_ikb(
         self,
         year: int = datetime.now().year,
         month: int = datetime.now().month
@@ -80,7 +80,7 @@ class InlineCalendar:
 
         return inline_kb
 
-    async def _get_years_kb(self, year: int = datetime.now().year) -> InlineKeyboardMarkup:
+    async def _display_years_ikb(self, year: int = datetime.now().year) -> InlineKeyboardMarkup:
         inline_kb = InlineKeyboardMarkup(row_width=5)
         # first row - years
         inline_kb.row()
@@ -101,7 +101,7 @@ class InlineCalendar:
 
         return inline_kb
 
-    async def _get_months_kb(
+    async def _display_months_ikb(
         self, year: int = datetime.now().year, month: int = datetime.now().month
     ) -> InlineKeyboardMarkup:
         inline_kb = InlineKeyboardMarkup(row_width=6)
@@ -164,32 +164,38 @@ class InlineCalendar:
         # user navigates to previous year, editing message with new calendar
         if data['act'] == "PREV-YEAR":
             prev_date = datetime(int(data['year']) - 1, int(data['month']), 1)
-            await query.message.edit_reply_markup(await self.start_calendar(int(prev_date.year), int(prev_date.month)))
+            await query.message.edit_reply_markup(await self.display_calendar_ikb(int(prev_date.year),
+                                                                                  int(prev_date.month)))
         # user navigates to next year, editing message with new calendar
         if data['act'] == "NEXT-YEAR":
             next_date = datetime(int(data['year']) + 1, int(data['month']), 1)
-            await query.message.edit_reply_markup(await self.start_calendar(int(next_date.year), int(next_date.month)))
+            await query.message.edit_reply_markup(await self.display_calendar_ikb(int(next_date.year),
+                                                                                  int(next_date.month)))
         # user navigates to previous month, editing message with new calendar
         if data['act'] == "PREV-MONTH":
             prev_date = datetime(int(data['year']), int(data['month']), 1) - timedelta(days=1)
-            await query.message.edit_reply_markup(await self.start_calendar(int(prev_date.year), int(prev_date.month)))
+            await query.message.edit_reply_markup(await self.display_calendar_ikb(int(prev_date.year),
+                                                                                  int(prev_date.month)))
         # user navigates to next month, editing message with new calendar
         if data['act'] == "NEXT-MONTH":
             next_date = datetime(int(data['year']), int(data['month']), 1) + timedelta(days=31)
-            await query.message.edit_reply_markup(await self.start_calendar(int(next_date.year), int(next_date.month)))
+            await query.message.edit_reply_markup(await self.display_calendar_ikb(int(next_date.year),
+                                                                                  int(next_date.month)))
         if data['act'] == 'MONTHS':
-            await query.message.edit_reply_markup(await self._get_months_kb(int(data['year']), int(data['month'])))
+            await query.message.edit_reply_markup(await self._display_months_ikb(int(data['year']),
+                                                                                 int(data['month'])))
         if data['act'] == "SET-MONTH":
-            await query.message.edit_reply_markup(await self.start_calendar(int(data['year']), int(data['month'])))
+            await query.message.edit_reply_markup(await self.display_calendar_ikb(int(data['year']),
+                                                                                  int(data['month'])))
         if data['act'] == "SET-YEAR":
-            await query.message.edit_reply_markup(await self.start_calendar(int(data['year'])))
+            await query.message.edit_reply_markup(await self.display_calendar_ikb(int(data['year'])))
         if data['act'] == 'YEARS':
-            await query.message.edit_reply_markup(await self._get_years_kb(int(data['year'])))
+            await query.message.edit_reply_markup(await self._display_years_ikb(int(data['year'])))
         if data['act'] == 'PREV-YEARS':
             new_year = int(data['year']) - 15
-            await query.message.edit_reply_markup(await self._get_years_kb(new_year))
+            await query.message.edit_reply_markup(await self._display_years_ikb(new_year))
         if data['act'] == 'NEXT-YEARS':
             new_year = int(data['year']) + 15
-            await query.message.edit_reply_markup(await self._get_years_kb(new_year))
+            await query.message.edit_reply_markup(await self._display_years_ikb(new_year))
 
         return return_data

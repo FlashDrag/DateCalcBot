@@ -8,7 +8,7 @@ from filters.user import SubmitTimeUnitsFilter
 
 from states.user import UserMain, CustomCounter
 
-from utils.calendar import InlineCalendar
+from utils.calendar import CalendarIkb
 from keyboards.user_keyboard.inline_keyboard import ikb_time_units
 
 
@@ -54,7 +54,7 @@ async def process_all_units_select(call: CallbackQuery, state: FSMContext):
     # display updated inline keyboard with all selected time units
     await call.message.edit_reply_markup(reply_markup=ikb_time_units(all_units))
     await call.message.answer('Select start date',
-                              reply_markup=await InlineCalendar().start_calendar())
+                              reply_markup=await CalendarIkb().display_calendar_ikb())
     await state.set_state(CustomCounter.set_start_date)
     await call.answer()
 
@@ -70,7 +70,7 @@ async def process_time_units_submit(call: CallbackQuery, state: FSMContext):
         await call.answer()
         return
     await call.message.answer('Select start date',
-                              reply_markup=await InlineCalendar().start_calendar())
+                              reply_markup=await CalendarIkb().display_calendar_ikb())
     await state.set_state(CustomCounter.set_start_date)
     await call.answer()
 
