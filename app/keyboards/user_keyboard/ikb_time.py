@@ -14,9 +14,9 @@ class TimeIkb:
     Time inline keyboard
     '''
     increase = '↑'
-    increase_n = '↟'
+    increase_n = '⤊'
     decrease = '↓'
-    decrease_n = '↡'
+    decrease_n = '⤋'
 
     async def display_time_ikb(
 
