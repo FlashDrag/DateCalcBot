@@ -13,9 +13,9 @@ from filters.admin import AdminFilter
 from handlers.admin import register_admin
 from handlers.user.main_menu import register_main
 from handlers.user.datetime_exapmles import register_datetime_examples
-from handlers.user.quick_counter import register_quick_counter
 from handlers.user.custom_counter.time_units_select import register_time_units_select
 from handlers.user.custom_counter.datetime_select import register_time_select
+from handlers.user.manual_counter import register_manual_counter
 
 
 # from app.middlewares.db import DbMiddleware
@@ -42,9 +42,9 @@ def register_all_handlers(dp):
     register_admin(dp)
     register_main(dp)
     register_datetime_examples(dp)
-    register_quick_counter(dp)
     register_time_units_select(dp)
     register_time_select(dp)
+    register_manual_counter(dp)
 
 
 async def main():

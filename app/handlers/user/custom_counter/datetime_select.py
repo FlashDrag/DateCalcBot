@@ -127,7 +127,7 @@ async def submit_end_time(call: CallbackQuery, state: FSMContext, callback_data:
         await call.answer()
         await state.finish()
 
-    logger.info(f'\nUser: {call.from_user.full_name}, id: {call.from_user.id}\n{result_string}')
+        logger.info(f'\nUser: {call.from_user.full_name}, id: {call.from_user.id}\n{result_string}')
 
 
 def register_time_select(dp: Dispatcher):

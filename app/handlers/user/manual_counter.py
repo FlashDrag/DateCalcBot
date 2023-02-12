@@ -2,9 +2,7 @@ import logging
 
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.types import Message, CallbackQuery
-from aiogram.dispatcher.filters import Text
-from aiogram.types import ReplyKeyboardRemove
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 
 # from app.services.repository import Repo
@@ -23,10 +21,10 @@ async def request_start_datetime(call: CallbackQuery, state: FSMContext):
     Sends a message to the user asking for the start date and time
     and provides a keyboard to show datetime examples.
     """
-    string = f'Type the START date/time in format:\n' \
+    string = f'Enter the START date/time in format:\n' \
         f'<code><b>DD.MM.YYYY HH:MM</b></code>'
     await call.message.answer(string, reply_markup=formates_kb())
-    await call.answer('To show examples, text /formates')
+    await call.answer('To display examples - press Formates button')
     await state.set_state(Counter.start_datetime)
 
 
@@ -53,7 +51,7 @@ async def process_start_string(message: Message, state: FSMContext):
     else:
         async with state.proxy() as dt:
             dt['st_datetime'] = st_datetime  # save DT instance to storage
-        string = f'Type the END date/time in format:\n' \
+        string = f'Enter the END date/time in format:\n' \
             f'<code><b>DD.MM.YYYY HH:MM</b></code>'
         # provides a keyboard to show datetime examples
         await message.answer(string, reply_markup=formates_kb())
@@ -112,10 +110,10 @@ async def process_end_string(message: Message, state: FSMContext):
             logger.info(f'\nUser: {message.from_user.full_name}, id: {message.from_user.id}\n{res_str}')
 
 
-def register_quick_counter(dp: Dispatcher):
+def register_manual_counter(dp: Dispatcher):
 
     dp.register_callback_query_handler(
-        request_start_datetime, text='quick_counter', state=UserMain.counter)
+        request_start_datetime, text='manual_counter', state=UserMain.counter)
     dp.register_message_handler(
         process_start_string, state=Counter.start_datetime)
     dp.register_message_handler(

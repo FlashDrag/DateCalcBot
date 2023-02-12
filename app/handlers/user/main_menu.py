@@ -1,6 +1,6 @@
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.dispatcher.filters import Text, CommandStart
 
 # TODO DB
@@ -33,7 +33,7 @@ async def cancel_action(message: Message, state: FSMContext):
     Resets state and displays the start inline menu
     '''
     await state.reset_state()
-    await message.reply('<i>Canceled!</i>')
+    await message.reply('<i>Canceled!</i>', reply_markup=ReplyKeyboardRemove())
     await message.answer('<b>Enter /start to display the menu!</b>')
 
 
