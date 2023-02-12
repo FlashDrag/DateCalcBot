@@ -39,7 +39,7 @@ async def cancel_action(message: Message, state: FSMContext):
 
 def register_main(dp: Dispatcher):
     dp.register_message_handler(
-        show_start_menu, CommandStart(), state=None)
+        show_start_menu, CommandStart(), state='*')
     dp.register_message_handler(
         show_info, commands="info", state="*")
     dp.register_message_handler(

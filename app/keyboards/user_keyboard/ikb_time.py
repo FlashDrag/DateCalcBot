@@ -10,16 +10,35 @@ time_callback = CallbackData('time', 'act', 'hour', 'minute')
 
 
 class TimeIkb:
+    '''
+    Time inline keyboard
+    '''
     increase = '↑'
+    increase_n = '↟'
     decrease = '↓'
+    decrease_n = '↡'
 
     async def display_time_ikb(
+
         self,
-        hour: int = datetime.now().hour,
-        minute: int = datetime.now().minute
+        hour: int = datetime.utcnow().hour,
+        minute: int = datetime.utcnow().minute
     ) -> InlineKeyboardMarkup:
+        '''
+        Display ikb with arrow selection
+        '''
         markup = InlineKeyboardMarkup(row_width=2)
-        # First row - increase buttons
+        # First row - increase buttons for n numbers
+        markup.row()
+        markup.insert(InlineKeyboardButton(
+            text=self.increase_n,
+            callback_data=time_callback.new("increase_n_hour", hour, minute)
+        ))
+        markup.insert(InlineKeyboardButton(
+            text=self.increase_n,
+            callback_data=time_callback.new("increase_n_minute", hour, minute)
+        ))
+        # Second row - increase buttons
         markup.row()
         markup.insert(InlineKeyboardButton(
             text=self.increase,
@@ -29,7 +48,7 @@ class TimeIkb:
             text=self.increase,
             callback_data=time_callback.new("increase_minute", hour, minute)
         ))
-        # Second row - Hours, Minutes
+        # Third row - Hours, Minutes
         markup.insert(InlineKeyboardButton(
             text=hour,
             callback_data=time_callback.new("HOURS", hour, minute)
@@ -38,7 +57,7 @@ class TimeIkb:
             text=minute,
             callback_data=time_callback.new("MINUTES", hour, minute)
         ))
-        # Third row - decrease buttons
+        # Fourht row - decrease buttons
         markup.row()
         markup.insert(InlineKeyboardButton(
             text=self.decrease,
@@ -48,7 +67,17 @@ class TimeIkb:
             text=self.decrease,
             callback_data=time_callback.new("decrease_minute", hour, minute)
         ))
-        # Four row - submit
+        # Fifth row - decrease buttons for n numbers
+        markup.row()
+        markup.insert(InlineKeyboardButton(
+            text=self.decrease_n,
+            callback_data=time_callback.new("decrease_n_hour", hour, minute)
+        ))
+        markup.insert(InlineKeyboardButton(
+            text=self.decrease_n,
+            callback_data=time_callback.new("decrease_n_minute", hour, minute)
+        ))
+        # Sixth row - submit
         markup.row()
         markup.insert(InlineKeyboardButton(
             text='Submit',
@@ -59,9 +88,12 @@ class TimeIkb:
 
     async def _display_hours_ikb(
         self,
-        hour: int = datetime.now().hour,
-        minute: int = datetime.now().minute
+        hour: int = datetime.utcnow().hour,
+        minute: int = datetime.utcnow().minute
     ) -> InlineKeyboardMarkup:
+        '''
+        Display hours 0-23 to select
+        '''
         markup = InlineKeyboardMarkup(row_width=6)
         markup.row()
         for hour in range(0, 24):
@@ -74,9 +106,12 @@ class TimeIkb:
 
     async def _display_minutes_ikb(
         self,
-        hour: int = datetime.now().hour,
-        minute: int = datetime.now().minute
+        hour: int = datetime.utcnow().hour,
+        minute: int = datetime.utcnow().minute
     ) -> InlineKeyboardMarkup:
+        '''
+        Display every 5th minutes from 0-55 to select
+        '''
         markup = InlineKeyboardMarkup(row_width=6)
         markup.row()
         for minute in range(0, 56, 5):
@@ -88,6 +123,11 @@ class TimeIkb:
         return markup
 
     async def process_selection(self, query: CallbackQuery, data: CallbackData) -> tuple:
+        '''
+        Call class method appropriated to callback data and edit time inline keyboard.
+        :return return_data: if time submitted by the user,
+        tupple with True and datetime.time object will be returned
+        '''
         return_data = (False, None)
         # processing empty buttons, answering with no action
         if data['act'] == "IGNORE":
@@ -98,6 +138,7 @@ class TimeIkb:
             # convert hour and minute to time using datetime.time
             return_data = True, time(
                 int(data['hour']), int(data['minute']))
+
         if data['act'] == 'HOURS':
             await query.message.edit_reply_markup(
                 await self._display_hours_ikb(int(data['hour']), int(data['minute']))
@@ -106,6 +147,7 @@ class TimeIkb:
             await query.message.edit_reply_markup(
                 await self._display_minutes_ikb(int(data['hour']), int(data['minute']))
             )
+
         if data['act'] == "SET-HOUR":
             await query.message.edit_reply_markup(
                 await self.display_time_ikb(int(data['hour']), int(data['minute']))
@@ -114,6 +156,7 @@ class TimeIkb:
             await query.message.edit_reply_markup(
                 await self.display_time_ikb(int(data['hour']), int(data['minute']))
             )
+
         if data['act'] == "increase_hour":
             # if the hour or minute is at the maximum value of 23 or 55 respectively - reset it to 0
             next_hour = (int(data['hour']) + 1) % 24
@@ -121,7 +164,7 @@ class TimeIkb:
                 await self.display_time_ikb(next_hour, int(data['minute']))
             )
         if data['act'] == "increase_minute":
-            next_minute = (int(data['minute']) + 5) % 60
+            next_minute = (int(data['minute']) + 1) % 60
             await query.message.edit_reply_markup(
                 await self.display_time_ikb(int(data['hour']), next_minute)
             )
@@ -132,7 +175,30 @@ class TimeIkb:
                 await self.display_time_ikb(next_hour, int(data['minute']))
             )
         if data['act'] == "decrease_minute":
-            next_minute = (int(data['minute']) - 5) % 60
+            next_minute = (int(data['minute']) - 1) % 60
+            await query.message.edit_reply_markup(
+                await self.display_time_ikb(int(data['hour']), next_minute)
+            )
+
+        if data['act'] == "increase_n_hour":
+            # if the hour or minute is at the maximum value of 23 or 55 respectively - reset it to 0
+            next_hour = (int(data['hour']) + 3) % 24
+            await query.message.edit_reply_markup(
+                await self.display_time_ikb(next_hour, int(data['minute']))
+            )
+        if data['act'] == "increase_n_minute":
+            next_minute = (int(data['minute']) + 10) % 60
+            await query.message.edit_reply_markup(
+                await self.display_time_ikb(int(data['hour']), next_minute)
+            )
+        if data['act'] == "decrease_n_hour":
+            # if the hour or minute is at the minimum value of zero, set it to 23 or 55 respectively
+            next_hour = (int(data['hour']) - 3) % 24
+            await query.message.edit_reply_markup(
+                await self.display_time_ikb(next_hour, int(data['minute']))
+            )
+        if data['act'] == "decrease_n_minute":
+            next_minute = (int(data['minute']) - 10) % 60
             await query.message.edit_reply_markup(
                 await self.display_time_ikb(int(data['hour']), next_minute)
             )
