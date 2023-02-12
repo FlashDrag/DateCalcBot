@@ -25,7 +25,8 @@ class CalendarIkb:
     async def display_calendar_ikb(
         self,
         year: int = datetime.now().year,
-        month: int = datetime.now().month
+        month: int = datetime.now().month,
+        today: int = datetime.now().day
     ) -> InlineKeyboardMarkup:
         """
         Creates an inline keyboard with the provided year and month
@@ -38,15 +39,17 @@ class CalendarIkb:
         inline_kb.row()
         inline_kb.insert(InlineKeyboardButton(
             "<<",
-            callback_data=calendar_callback.new("PREV-YEAR", year, month, 1)
+            callback_data=calendar_callback.new(
+                "PREV-YEAR", year, month, today)
         ))
         inline_kb.insert(InlineKeyboardButton(
             year,
-            callback_data=calendar_callback.new('YEARS', year, month, 1)
+            callback_data=calendar_callback.new('YEARS', year, month, today)
         ))
         inline_kb.insert(InlineKeyboardButton(
             ">>",
-            callback_data=calendar_callback.new("NEXT-YEAR", year, month, 1)
+            callback_data=calendar_callback.new(
+                "NEXT-YEAR", year, month, today)
         ))
         # Second row - Week Days
         inline_kb.row()
@@ -62,6 +65,11 @@ class CalendarIkb:
                 if (day == 0):
                     inline_kb.insert(InlineKeyboardButton(
                         " ", callback_data=self.ignore_callback))
+                    continue
+                if int(datetime.now().month) == month and int(datetime.now().year) == year and day == today:
+                    inline_kb.insert(InlineKeyboardButton(
+                        str(day)+'◂', callback_data=calendar_callback.new("DAY", year, month, day)
+                    ))
                     continue
                 inline_kb.insert(InlineKeyboardButton(
                     str(day), callback_data=calendar_callback.new("DAY", year, month, day)
@@ -80,23 +88,25 @@ class CalendarIkb:
 
         return inline_kb
 
-    async def _display_years_ikb(self, year: int = datetime.now().year) -> InlineKeyboardMarkup:
+    async def _display_years_ikb(
+        self, year: int = datetime.now().year, month: int = datetime.now().month
+    ) -> InlineKeyboardMarkup:
         inline_kb = InlineKeyboardMarkup(row_width=5)
         # first row - years
         inline_kb.row()
         for value in range(year - 7, year + 8):
             inline_kb.insert(InlineKeyboardButton(
                 value,
-                callback_data=calendar_callback.new('SET-YEAR', value, 1, 1)
+                callback_data=calendar_callback.new('SET-YEAR', value, month, 1)
             ))
         # nav buttons
         inline_kb.insert(InlineKeyboardButton(
             '<<',
-            callback_data=calendar_callback.new('PREV-YEARS', year, 1, 1)
+            callback_data=calendar_callback.new('PREV-YEARS', year, month, 1)
         ))
         inline_kb.insert(InlineKeyboardButton(
             '>>',
-            callback_data=calendar_callback.new('NEXT-YEARS', year, 1, 1)
+            callback_data=calendar_callback.new('NEXT-YEARS', year, month, 1)
         ))
 
         return inline_kb
@@ -173,12 +183,14 @@ class CalendarIkb:
                                                                                   int(next_date.month)))
         # user navigates to previous month, editing message with new calendar
         if data['act'] == "PREV-MONTH":
-            prev_date = datetime(int(data['year']), int(data['month']), 1) - timedelta(days=1)
+            prev_date = datetime(int(data['year']),
+                                 int(data['month']), 1) - timedelta(days=1)
             await query.message.edit_reply_markup(await self.display_calendar_ikb(int(prev_date.year),
                                                                                   int(prev_date.month)))
         # user navigates to next month, editing message with new calendar
         if data['act'] == "NEXT-MONTH":
-            next_date = datetime(int(data['year']), int(data['month']), 1) + timedelta(days=31)
+            next_date = datetime(int(data['year']),
+                                 int(data['month']), 1) + timedelta(days=31)
             await query.message.edit_reply_markup(await self.display_calendar_ikb(int(next_date.year),
                                                                                   int(next_date.month)))
         if data['act'] == 'MONTHS':
@@ -188,14 +200,18 @@ class CalendarIkb:
             await query.message.edit_reply_markup(await self.display_calendar_ikb(int(data['year']),
                                                                                   int(data['month'])))
         if data['act'] == "SET-YEAR":
-            await query.message.edit_reply_markup(await self.display_calendar_ikb(int(data['year'])))
+            await query.message.edit_reply_markup(await self.display_calendar_ikb(int(data['year']),
+                                                                                  int(data['month'])))
         if data['act'] == 'YEARS':
-            await query.message.edit_reply_markup(await self._display_years_ikb(int(data['year'])))
+            await query.message.edit_reply_markup(await self._display_years_ikb(int(data['year']),
+                                                                                int(data['month'])))
         if data['act'] == 'PREV-YEARS':
             new_year = int(data['year']) - 15
-            await query.message.edit_reply_markup(await self._display_years_ikb(new_year))
+            await query.message.edit_reply_markup(await self._display_years_ikb(new_year,
+                                                                                int(data['month'])))
         if data['act'] == 'NEXT-YEARS':
             new_year = int(data['year']) + 15
-            await query.message.edit_reply_markup(await self._display_years_ikb(new_year))
+            await query.message.edit_reply_markup(await self._display_years_ikb(new_year,
+                                                                                int(data['month'])))
 
         return return_data
