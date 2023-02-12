@@ -122,10 +122,10 @@ async def submit_end_time(call: CallbackQuery, state: FSMContext, callback_data:
         # call a func that stores selected time to fsm storage
         await store_time(call, state, time, 'end')
 
-    result_string = await calculate(state)
-    await call.message.answer(result_string)
-    await call.answer()
-    await state.finish()
+        result_string = await calculate(state)
+        await call.message.answer(result_string)
+        await call.answer()
+        await state.finish()
 
     logger.info(f'\nUser: {call.from_user.full_name}, id: {call.from_user.id}\n{result_string}')
 
