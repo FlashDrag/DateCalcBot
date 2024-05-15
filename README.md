@@ -7,3 +7,5 @@ DateCalcBot can calculate the difference between two dates in different units of
 **TG Bot link**: https://t.me/DateCalcBot
 
 >❗️*the bot is still under development and may be inactive yet*
+
+![DateCalcBot](docs/images/date_time_calc_bot.png)
